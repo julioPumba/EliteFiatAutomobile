@@ -13,7 +13,6 @@
                         fiatRed: '#990000',
                         darkElite: '#111111',
                     },
-                    // Añadimos una animación suave para el desvanecimiento del banner
                     animation: {
                         'fade-in': 'fadeIn 1s ease-in-out forwards',
                     },
@@ -28,7 +27,6 @@
         }
     </script>
     <style>
-        /* Estilo necesario para superponer las imágenes del banner */
         .slide {
             position: absolute;
             inset: 0;
@@ -58,38 +56,51 @@
     <section class="relative flex items-center justify-center min-h-[75vh] md:min-h-[85vh] overflow-hidden px-4 text-center">
         
         <div id="slideshow-container" class="absolute inset-0 z-0">
-            <div class="slide active" style="background-image: url('https://images.unsplash.com/photo-1541811634833-28da5e65d836?q=80&w=1920&auto=format&fit=crop');">
-                <div class="absolute inset-0 bg-black/70"></div> </div>
-            <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1563720223185-11003d516935?q=80&w=1920&auto=format&fit=crop');">
-                <div class="absolute inset-0 bg-black/70"></div>
+            <div class="slide active" style="background-image: url('elite1.jpeg');">
+                <div class="absolute inset-0 bg-black/75"></div>
             </div>
-            <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1521412030256-4b953d607e4d?q=80&w=1920&auto=format&fit=crop');">
-                <div class="absolute inset-0 bg-black/70"></div>
+            <div class="slide" style="background-image: url('elite2.jpeg');">
+                <div class="absolute inset-0 bg-black/75"></div>
             </div>
-            <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1583121274602-3e2820c69888?q=80&w=1920&auto=format&fit=crop');">
-                <div class="absolute inset-0 bg-black/70"></div>
+            <div class="slide" style="background-image: url('elite3.jpeg');">
+                <div class="absolute inset-0 bg-black/75"></div>
             </div>
+            <div class="slide" style="background-image: url('elite4.jpeg');">
+                <div class="absolute inset-0 bg-black/75"></div>
             </div>
+            <div class="slide" style="background-image: url('elite5.jpeg');">
+                <div class="absolute inset-0 bg-black/75"></div>
+            </div>
+            <div class="slide" style="background-image: url('elite6.jpg');">
+                <div class="absolute inset-0 bg-black/75"></div>
+            </div>
+            <div class="slide" style="background-image: url('elite7.jpg');">
+                <div class="absolute inset-0 bg-black/75"></div>
+            </div>
+            <div class="slide" style="background-image: url('elite8.jpg');">
+                <div class="absolute inset-0 bg-black/75"></div>
+            </div>
+        </div>
 
         <div class="relative z-10 max-w-3xl mx-auto space-y-6 animate-fade-in">
-            <span class="text-fiatRed font-bold tracking-widest text-sm uppercase bg-black/50 px-3 py-1 rounded-full inline-block">Comunidad Exclusiva</span>
+            <span class="text-fiatRed font-bold tracking-widest text-sm uppercase bg-black/60 px-4 py-1.5 rounded-full inline-block border border-red-900/30">Comunidad Exclusiva</span>
             <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight text-white leading-tight">
                 Bienvenidos a la <br><span class="bg-clip-text text-transparent bg-gradient-to-r from-red-500 to-fiatRed">Organización Élite</span>
             </h1>
-            <p class="text-xl sm:text-2xl text-gray-200 font-light italic max-w-2xl mx-auto bg-black/30 p-4 rounded-xl backdrop-blur-sm">
+            <p class="text-xl sm:text-2xl text-gray-200 font-light italic max-w-2xl mx-auto bg-black/50 p-6 rounded-xl backdrop-blur-sm border border-zinc-800">
                 "Entusiastas de la pasión automotriz Fiat, somos una minoría selecta y cualitativa…"
             </p>
             <div class="pt-4">
-                <button onclick="toggleModal()" class="bg-fiatRed hover:bg-red-700 text-white font-bold py-3 px-8 rounded-full transition duration-300 transform hover:scale-105 cursor-pointer shadow-2xl">
+                <button onclick="toggleModal()" class="bg-fiatRed hover:bg-red-700 text-white font-bold py-3.5 px-8 rounded-full transition duration-300 transform hover:scale-105 cursor-pointer shadow-2xl shadow-red-900/50 text-lg">
                     Quiero Registrarme
                 </button>
             </div>
         </div>
     </section>
 
-    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 border-t border-gray-900 bg-black">
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 border-t border-zinc-900 bg-black">
         <div class="grid md:grid-cols-2 gap-12">
-            <div class="bg-zinc-900/30 p-8 rounded-2xl border border-gray-800 hover:border-fiatRed/50 transition duration-500">
+            <div class="bg-zinc-900/20 p-8 rounded-2xl border border-zinc-800 hover:border-fiatRed/40 transition duration-500">
                 <div class="w-12 h-12 bg-fiatRed/10 text-fiatRed rounded-xl flex items-center justify-center mb-6 text-2xl">👁️</div>
                 <h3 class="text-2xl font-bold text-white mb-4">Nuestra Visión</h3>
                 <p class="text-gray-400 leading-relaxed text-lg">
@@ -97,7 +108,7 @@
                 </p>
             </div>
 
-            <div class="bg-zinc-900/30 p-8 rounded-2xl border border-gray-800 hover:border-fiatRed/50 transition duration-500">
+            <div class="bg-zinc-900/20 p-8 rounded-2xl border border-zinc-800 hover:border-fiatRed/40 transition duration-500">
                 <div class="w-12 h-12 bg-fiatRed/10 text-fiatRed rounded-xl flex items-center justify-center mb-6 text-2xl">🎯</div>
                 <h3 class="text-2xl font-bold text-white mb-4">Nuestra Meta</h3>
                 <p class="text-gray-400 leading-relaxed text-lg">
@@ -107,15 +118,15 @@
         </div>
     </section>
 
-    <footer class="border-t border-gray-900 bg-black py-10 text-center text-sm text-gray-600">
+    <footer class="border-t border-zinc-900 bg-black py-10 text-center text-sm text-gray-600">
         <p>&copy; 2026 Organización Élite. Hecho por y para entusiastas de Fiat.</p>
     </footer>
 
     <div id="registerModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm transition-opacity duration-300 opacity-0">
-        <div class="bg-zinc-950 border border-gray-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl transform scale-95 transition-transform duration-300">
+        <div class="bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl transform scale-95 transition-transform duration-300">
             <div class="bg-gradient-to-r from-fiatRed to-red-900 p-6 text-white relative">
                 <h3 class="text-2xl font-black tracking-wide">REGISTRO</h3>
-                <p class="text-red-100 text-sm mt-1">Si quieres unirte al team por favor completa el registro.</p>
+                <p class="text-red-100 text-sm mt-1">Si quieres unirte al team, por favor completa el registro.</p>
                 <button onclick="toggleModal()" class="absolute top-4 right-4 text-white/70 hover:text-white text-2xl font-bold cursor-pointer">&times;</button>
             </div>
 
@@ -123,25 +134,25 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">Nombre</label>
-                        <input type="text" required class="w-full bg-zinc-900 border border-gray-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-fiatRed transition">
+                        <input type="text" required class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-fiatRed transition">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">Apellido</label>
-                        <input type="text" required class="w-full bg-zinc-900 border border-gray-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-fiatRed transition">
+                        <input type="text" required class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-fiatRed transition">
                     </div>
                 </div>
                 <div>
                     <label class="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">Cédula</label>
-                    <input type="text" required class="w-full bg-zinc-900 border border-gray-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-fiatRed transition" placeholder="V-12345678">
+                    <input type="text" required class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-fiatRed transition" placeholder="V-12345678">
                 </div>
                 <div class="grid grid-cols-3 gap-4">
                     <div class="col-span-2">
                         <label class="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">Modelo del Carro</label>
-                        <input type="text" required placeholder="Ej. Fiat Uno" class="w-full bg-zinc-900 border border-gray-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-fiatRed transition">
+                        <input type="text" required placeholder="Ej. Fiat Uno" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-fiatRed transition">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">Año</label>
-                        <input type="number" required min="1900" max="2026" placeholder="2008" class="w-full bg-zinc-900 border border-gray-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-fiatRed transition">
+                        <input type="number" required min="1900" max="2027" placeholder="2008" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-fiatRed transition">
                     </div>
                 </div>
 
@@ -158,22 +169,15 @@
         // --- Lógica del BANNER DINÁMICO ---
         const slides = document.querySelectorAll('.slide');
         let currentSlideIdx = 0;
-        const slideInterval = 5000; // Tiempo entre cambios (5 segundos)
+        const slideInterval = 4000; // Cambia cada 4 segundos
 
         function nextSlide() {
-            // Quitar clase activa a la imagen actual
             slides[currentSlideIdx].classList.remove('active');
-            
-            // Calcular índice de la siguiente imagen
             currentSlideIdx = (currentSlideIdx + 1) % slides.length;
-            
-            // Añadir clase activa a la nueva imagen
             slides[currentSlideIdx].classList.add('active');
         }
 
-        // Iniciar el cambio automático
         setInterval(nextSlide, slideInterval);
-
 
         // --- Lógica del MODAL ---
         const modal = document.getElementById('registerModal');
