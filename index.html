@@ -42,6 +42,14 @@
             filter: invert(1);
             cursor: pointer;
         }
+        .spinner {
+            width: 18px; height: 18px;
+            border: 2px solid rgba(255,255,255,.35);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin .8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="bg-darkElite text-gray-100 font-sans antialiased selection:bg-fiatRed selection:text-white overflow-x-hidden">
@@ -70,30 +78,14 @@
 
     <section class="relative flex items-center justify-center min-h-[75vh] md:min-h-[85vh] overflow-hidden px-4 text-center">
         <div id="slideshow-container" class="absolute inset-0 z-0">
-            <div class="slide active" style="background-image: url('elite1.jpeg');">
-                <div class="absolute inset-0 bg-black/40"></div>
-            </div>
-            <div class="slide" style="background-image: url('elite2.jpeg');">
-                <div class="absolute inset-0 bg-black/40"></div>
-            </div>
-            <div class="slide" style="background-image: url('elite3.jpeg');">
-                <div class="absolute inset-0 bg-black/40"></div>
-            </div>
-            <div class="slide" style="background-image: url('elite4.jpeg');">
-                <div class="absolute inset-0 bg-black/40"></div>
-            </div>
-            <div class="slide" style="background-image: url('elite5.jpeg');">
-                <div class="absolute inset-0 bg-black/40"></div>
-            </div>
-            <div class="slide" style="background-image: url('elite6.jpg');">
-                <div class="absolute inset-0 bg-black/40"></div>
-            </div>
-            <div class="slide" style="background-image: url('elite7.jpg');">
-                <div class="absolute inset-0 bg-black/40"></div>
-            </div>
-            <div class="slide" style="background-image: url('elite8.jpg');">
-                <div class="absolute inset-0 bg-black/40"></div>
-            </div>
+            <div class="slide active" style="background-image: url('elite1.jpeg');"><div class="absolute inset-0 bg-black/40"></div></div>
+            <div class="slide" style="background-image: url('elite2.jpeg');"><div class="absolute inset-0 bg-black/40"></div></div>
+            <div class="slide" style="background-image: url('elite3.jpeg');"><div class="absolute inset-0 bg-black/40"></div></div>
+            <div class="slide" style="background-image: url('elite4.jpeg');"><div class="absolute inset-0 bg-black/40"></div></div>
+            <div class="slide" style="background-image: url('elite5.jpeg');"><div class="absolute inset-0 bg-black/40"></div></div>
+            <div class="slide" style="background-image: url('elite6.jpg');"><div class="absolute inset-0 bg-black/40"></div></div>
+            <div class="slide" style="background-image: url('elite7.jpg');"><div class="absolute inset-0 bg-black/40"></div></div>
+            <div class="slide" style="background-image: url('elite8.jpg');"><div class="absolute inset-0 bg-black/40"></div></div>
         </div>
 
         <div class="relative z-10 max-w-3xl mx-auto space-y-6 animate-fade-in">
@@ -139,6 +131,7 @@
         <p>&copy; 2026 Organización Élite. Hecho por J.N y para entusiastas de Fiat.</p>
     </footer>
 
+    <!-- MODAL REGISTRO -->
     <div id="registerModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm transition-opacity duration-300 opacity-0">
         <div class="bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl transform scale-95 transition-transform duration-300">
             <div class="bg-gradient-to-r from-fiatRed to-red-900 p-6 text-white relative">
@@ -182,15 +175,19 @@
         </div>
     </div>
 
+    <!-- MODAL PAGO -->
     <div id="paymentModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm transition-opacity duration-300 opacity-0">
-        <div class="bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl transform scale-95 transition-transform duration-300">
+        <div class="bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-md max-h-[92vh] overflow-y-auto shadow-2xl transform scale-95 transition-transform duration-300">
             <div class="bg-gradient-to-r from-zinc-900 to-zinc-800 p-6 text-white relative border-b border-zinc-800">
                 <h3 class="text-2xl font-black tracking-wide text-white">REGISTRA TU CUOTA</h3>
-                <p class="text-gray-400 text-sm mt-1">Reporta los detalles de tu pago para validar tu cuota.</p>
+                <p class="text-gray-400 text-sm mt-1">Reporta los detalles de tu pago y adjunta el comprobante.</p>
                 <button onclick="togglePaymentModal()" aria-label="Cerrar modal" class="absolute top-4 right-4 text-white/70 hover:text-white text-2xl font-bold cursor-pointer">&times;</button>
             </div>
 
             <form id="paymentForm" onsubmit="handlePaymentSubmit(event)" class="p-6 space-y-4">
+                <!-- Anti-spam (campo oculto que los bots suelen llenar) -->
+                <input type="text" name="_honey" class="hidden" tabindex="-1" autocomplete="off">
+
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">Nombre</label>
@@ -226,115 +223,260 @@
                     </div>
                 </div>
 
-                <div class="pt-4">
-                    <button type="submit" class="w-full bg-fiatRed hover:bg-red-700 text-white font-bold py-3.5 rounded-lg transition duration-300 shadow-lg shadow-red-950 cursor-pointer text-lg">
-                        Enviar a WhatsApp 💬
+                <!-- Comprobante -->
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">Comprobante de Pago</label>
+                    <label for="pagoComprobante" id="dropZone" class="flex flex-col items-center justify-center gap-2 w-full min-h-[120px] bg-zinc-900 border-2 border-dashed border-zinc-700 hover:border-fiatRed rounded-lg px-4 py-4 text-center cursor-pointer transition">
+                        <img id="previewImg" class="hidden max-h-40 rounded-md object-contain" alt="Vista previa del comprobante">
+                        <span id="fileLabel" class="text-sm text-gray-400">📎 Toca para adjuntar el capture o comprobante<br><span class="text-xs text-gray-600">Imagen o PDF, máx. 5 MB</span></span>
+                    </label>
+                    <input type="file" id="pagoComprobante" name="pagoComprobante" accept="image/*,application/pdf" required class="sr-only">
+                </div>
+
+                <p id="paymentError" class="hidden text-sm text-red-400 bg-red-950/40 border border-red-900/50 rounded-lg px-3 py-2"></p>
+
+                <div class="pt-2">
+                    <button type="submit" id="paymentSubmitBtn" class="w-full flex items-center justify-center gap-2 bg-fiatRed hover:bg-red-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-lg transition duration-300 shadow-lg shadow-red-950 cursor-pointer text-lg">
+                        Enviar Reporte 📩
                     </button>
                 </div>
             </form>
+
+            <!-- Pantalla de éxito -->
+            <div id="paymentSuccess" class="hidden p-8 text-center space-y-4">
+                <div class="text-5xl">✅</div>
+                <h4 class="text-xl font-bold text-white">Reporte enviado</h4>
+                <p class="text-gray-400 text-sm">Recibimos tu pago y el comprobante. Te avisaremos cuando la cuota esté validada.</p>
+                <a id="whatsappLink" href="#" target="_blank" rel="noopener noreferrer" class="block w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition">
+                    Avisar también por WhatsApp 💬
+                </a>
+                <button onclick="togglePaymentModal()" class="w-full border border-zinc-700 hover:border-zinc-500 text-gray-300 py-3 rounded-lg transition cursor-pointer">
+                    Cerrar
+                </button>
+            </div>
         </div>
     </div>
 
     <script>
+        // ================== CONFIGURACIÓN ==================
+        // Pega aquí la URL de tu Apps Script (termina en /exec).
+        const SCRIPT_URL = "PEGA_AQUI_LA_URL_DE_TU_APPS_SCRIPT";
+        const WHATSAPP_NUMERO = "584241947654";
+        const MAX_MB = 5;
+        // ===================================================
+
         // --- BANNER DINÁMICO ---
         const slides = document.querySelectorAll('.slide');
         let currentSlideIdx = 0;
-        const slideInterval = 4000;
-
         function nextSlide() {
             slides[currentSlideIdx].classList.remove('active');
             currentSlideIdx = (currentSlideIdx + 1) % slides.length;
             slides[currentSlideIdx].classList.add('active');
         }
-        setInterval(nextSlide, slideInterval);
+        setInterval(nextSlide, 4000);
 
-        // --- LÓGICA MODAL 1 (Registro) ---
-        const modal = document.getElementById('registerModal');
-        const modalContent = modal.querySelector('div');
-
-        function toggleModal() {
-            if (modal.classList.contains('hidden')) {
-                modal.classList.remove('hidden');
-                modal.classList.add('flex');
-                setTimeout(() => {
-                    modal.classList.remove('opacity-0');
-                    modalContent.classList.remove('scale-95');
-                }, 10);
-            } else {
-                modal.classList.add('opacity-0');
-                modalContent.classList.add('scale-95');
-                setTimeout(() => {
-                    modal.classList.remove('flex');
-                    modal.classList.add('hidden');
-                }, 300);
-            }
+        // --- Helper para abrir/cerrar modales ---
+        function makeToggle(modalEl, onClose) {
+            const content = modalEl.querySelector('div');
+            return function () {
+                if (modalEl.classList.contains('hidden')) {
+                    modalEl.classList.remove('hidden');
+                    modalEl.classList.add('flex');
+                    setTimeout(() => {
+                        modalEl.classList.remove('opacity-0');
+                        content.classList.remove('scale-95');
+                    }, 10);
+                } else {
+                    modalEl.classList.add('opacity-0');
+                    content.classList.add('scale-95');
+                    setTimeout(() => {
+                        modalEl.classList.remove('flex');
+                        modalEl.classList.add('hidden');
+                        if (onClose) onClose();
+                    }, 300);
+                }
+            };
         }
-        modal.addEventListener('click', function(e) {
-            if (e.target === modal) toggleModal();
-        });
+
+        // --- MODAL 1 (Registro) ---
+        const modal = document.getElementById('registerModal');
+        const toggleModal = makeToggle(modal);
+        modal.addEventListener('click', e => { if (e.target === modal) toggleModal(); });
 
         function handleSubmit(event) {
             event.preventDefault();
             const formData = new FormData(event.target);
-            const nombre = formData.get('nombre');
-            const modelo = formData.get('modeloCarro');
-            alert(`¡Registro enviado con éxito, ${nombre}! Tu ${modelo} ya está en la lista del Team Élite.`);
-            document.getElementById('eliteForm').reset();
+            alert(`¡Registro enviado con éxito, ${formData.get('nombre')}! Tu ${formData.get('modeloCarro')} ya está en la lista del Team Élite.`);
+            event.target.reset();
             toggleModal();
         }
 
-        // --- LÓGICA MODAL 2 (Pagos y Redirección WhatsApp) ---
+        // --- MODAL 2 (Pagos) ---
         const paymentModal = document.getElementById('paymentModal');
-        const paymentModalContent = paymentModal.querySelector('div');
+        const paymentForm = document.getElementById('paymentForm');
+        const paymentSuccess = document.getElementById('paymentSuccess');
+        const paymentError = document.getElementById('paymentError');
+        const submitBtn = document.getElementById('paymentSubmitBtn');
+        const fileInput = document.getElementById('pagoComprobante');
+        const previewImg = document.getElementById('previewImg');
+        const fileLabel = document.getElementById('fileLabel');
+        const fileLabelDefault = fileLabel.innerHTML;
 
-        function togglePaymentModal() {
-            if (paymentModal.classList.contains('hidden')) {
-                paymentModal.classList.remove('hidden');
-                paymentModal.classList.add('flex');
-                setTimeout(() => {
-                    paymentModal.classList.remove('opacity-0');
-                    paymentModalContent.classList.remove('scale-95');
-                }, 10);
-            } else {
-                paymentModal.classList.add('opacity-0');
-                paymentModalContent.classList.add('scale-95');
-                setTimeout(() => {
-                    paymentModal.classList.remove('flex');
-                    paymentModal.classList.add('hidden');
-                }, 300);
-            }
+        function resetPaymentModal() {
+            paymentForm.reset();
+            paymentForm.classList.remove('hidden');
+            paymentSuccess.classList.add('hidden');
+            paymentError.classList.add('hidden');
+            previewImg.classList.add('hidden');
+            previewImg.removeAttribute('src');
+            fileLabel.innerHTML = fileLabelDefault;
+            setLoading(false);
         }
-        paymentModal.addEventListener('click', function(e) {
-            if (e.target === paymentModal) togglePaymentModal();
+
+        const togglePaymentModal = makeToggle(paymentModal, resetPaymentModal);
+        paymentModal.addEventListener('click', e => { if (e.target === paymentModal) togglePaymentModal(); });
+
+        // Cerrar con Escape
+        document.addEventListener('keydown', e => {
+            if (e.key !== 'Escape') return;
+            if (!paymentModal.classList.contains('hidden')) togglePaymentModal();
+            else if (!modal.classList.contains('hidden')) toggleModal();
         });
 
-        function handlePaymentSubmit(event) {
+        // Vista previa del comprobante
+        fileInput.addEventListener('change', () => {
+            paymentError.classList.add('hidden');
+            const file = fileInput.files[0];
+            if (!file) { fileLabel.innerHTML = fileLabelDefault; previewImg.classList.add('hidden'); return; }
+
+            if (file.size > MAX_MB * 1024 * 1024 && !file.type.startsWith('image/')) {
+                showError(`El archivo pesa más de ${MAX_MB} MB. Sube uno más liviano.`);
+                fileInput.value = '';
+                return;
+            }
+            if (file.type.startsWith('image/')) {
+                previewImg.src = URL.createObjectURL(file);
+                previewImg.classList.remove('hidden');
+            } else {
+                previewImg.classList.add('hidden');
+            }
+            fileLabel.innerHTML = `<span class="text-white">${file.name}</span><br><span class="text-xs text-gray-500">Toca para cambiarlo</span>`;
+        });
+
+        function showError(msg) {
+            paymentError.textContent = msg;
+            paymentError.classList.remove('hidden');
+        }
+
+        function setLoading(loading) {
+            submitBtn.disabled = loading;
+            submitBtn.innerHTML = loading
+                ? '<span class="spinner"></span> Enviando...'
+                : 'Enviar Reporte 📩';
+        }
+
+        // Reduce el tamaño de las fotos (los captures de celular pueden pesar mucho)
+        async function comprimirImagen(file, maxLado = 1600, calidad = 0.8) {
+            if (!file.type.startsWith('image/') || file.type === 'image/gif') return file;
+            try {
+                const img = await new Promise((res, rej) => {
+                    const i = new Image();
+                    i.onload = () => res(i);
+                    i.onerror = rej;
+                    i.src = URL.createObjectURL(file);
+                });
+                const escala = Math.min(1, maxLado / Math.max(img.width, img.height));
+                const canvas = document.createElement('canvas');
+                canvas.width = Math.round(img.width * escala);
+                canvas.height = Math.round(img.height * escala);
+                canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', calidad));
+                if (!blob || blob.size >= file.size) return file;
+                const nombre = file.name.replace(/\.[^.]+$/, '') + '.jpg';
+                return new File([blob], nombre, { type: 'image/jpeg' });
+            } catch {
+                return file;
+            }
+        }
+
+        function aBase64(file) {
+            return new Promise((res, rej) => {
+                const r = new FileReader();
+                r.onload = () => res(r.result.split(',')[1]);
+                r.onerror = () => rej(new Error('No se pudo leer el comprobante.'));
+                r.readAsDataURL(file);
+            });
+        }
+
+        async function handlePaymentSubmit(event) {
             event.preventDefault();
-            const formData = new FormData(event.target);
-            
-            const nombre = formData.get('pagoNombre');
-            const apellido = formData.get('pagoApellido');
-            const cedula = formData.get('pagoCedula');
-            const fecha = formData.get('pagoFecha');
-            const banco = formData.get('pagoBanco');
-            const referencia = formData.get('pagoReferencia');
-            const monto = formData.get('pagoMonto');
+            paymentError.classList.add('hidden');
 
-            const message = `*ORGANIZACIÓN ÉLITE - REPORTE DE CUOTA*\n\n` +
-                            `👤 *Integrante:* ${nombre} ${apellido}\n` +
-                            `🪪 *Cédula:* ${cedula}\n` +
-                            `📅 *Fecha de Pago:* ${fecha}\n` +
-                            `🏦 *Banco / Método:* ${banco}\n` +
-                            `🔢 *N° Referencia:* ${referencia}\n` +
-                            `💰 *Monto Reportado:* ${monto}`;
+            const fd = new FormData(paymentForm);
+            const nombre = fd.get('pagoNombre').trim();
+            const apellido = fd.get('pagoApellido').trim();
+            const cedula = fd.get('pagoCedula').trim();
+            const fecha = fd.get('pagoFecha');
+            const banco = fd.get('pagoBanco').trim();
+            const referencia = fd.get('pagoReferencia').trim();
+            const monto = fd.get('pagoMonto');
+            const archivoOriginal = fileInput.files[0];
 
-            const phoneNumber = "584241947654";
-            const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+            if (!archivoOriginal) { showError('Adjunta el comprobante de pago.'); return; }
 
-            window.open(whatsappUrl, '_blank');
+            setLoading(true);
 
-            document.getElementById('paymentForm').reset();
-            togglePaymentModal();
+            try {
+                const archivo = await comprimirImagen(archivoOriginal);
+                if (archivo.size > MAX_MB * 1024 * 1024) {
+                    throw new Error(`El comprobante pesa más de ${MAX_MB} MB. Sube uno más liviano.`);
+                }
+
+                if (!SCRIPT_URL.startsWith('https://script.google.com/')) {
+                    throw new Error('Falta configurar la URL del Apps Script en la página.');
+                }
+
+                const payload = {
+                    _honey: fd.get('_honey') || '',
+                    nombre, apellido, cedula, fecha, banco, referencia, monto,
+                    archivo: {
+                        nombre: archivo.name,
+                        tipo: archivo.type || 'application/octet-stream',
+                        base64: await aBase64(archivo)
+                    }
+                };
+
+                // text/plain evita el bloqueo CORS de Google
+                const resp = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await resp.json().catch(() => ({}));
+
+                if (!resp.ok || data.success !== true) {
+                    throw new Error(data.message || 'No se pudo enviar el reporte. Revisa tu conexión e inténtalo de nuevo.');
+                }
+
+                // Éxito: preparar enlace de WhatsApp opcional
+                const message = `*ORGANIZACIÓN ÉLITE - REPORTE DE CUOTA*\n\n` +
+                                `👤 *Integrante:* ${nombre} ${apellido}\n` +
+                                `🪪 *Cédula:* ${cedula}\n` +
+                                `📅 *Fecha de Pago:* ${fecha}\n` +
+                                `🏦 *Banco / Método:* ${banco}\n` +
+                                `🔢 *N° Referencia:* ${referencia}\n` +
+                                `💰 *Monto Reportado:* ${monto}\n\n` +
+                                `📎 Comprobante enviado por correo.`;
+                document.getElementById('whatsappLink').href =
+                    `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(message)}`;
+
+                paymentForm.classList.add('hidden');
+                paymentSuccess.classList.remove('hidden');
+            } catch (err) {
+                showError(err.message || 'No se pudo enviar el reporte. Inténtalo de nuevo.');
+            } finally {
+                setLoading(false);
+            }
         }
     </script>
 </body>
