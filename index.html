@@ -27,6 +27,7 @@
         }
     </script>
     <style>
+        html { scroll-behavior: smooth; }
         .slide {
             position: absolute;
             inset: 0;
@@ -50,6 +51,22 @@
             animation: spin .8s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Pestañas de vehículos */
+        .tabs-scroll { scrollbar-width: none; }
+        .tabs-scroll::-webkit-scrollbar { display: none; }
+        .veh-tab[aria-selected="true"] {
+            background: #990000;
+            border-color: #990000;
+            color: #fff;
+        }
+        .foto-card img { transition: transform .5s ease; }
+        .foto-card:hover img { transform: scale(1.04); }
+
+        @media (prefers-reduced-motion: reduce) {
+            html { scroll-behavior: auto; }
+            .slide, .foto-card img { transition: none; }
+        }
     </style>
 </head>
 <body class="bg-darkElite text-gray-100 font-sans antialiased selection:bg-fiatRed selection:text-white overflow-x-hidden">
@@ -61,10 +78,13 @@
             </div>
             
             <div class="flex items-center space-x-2 sm:space-x-4">
+                <a href="#vehiculos" class="hidden md:inline text-gray-400 hover:text-white transition duration-300 font-medium">
+                    Vehículos
+                </a>
                 <a href="https://www.instagram.com/elitefiatautomobile" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition duration-300 p-2 shrink-0" aria-label="Instagram de Organización Élite">
                     <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24">
                         <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
-                </svg>
+                    </svg>
                 </a>
                 <button onclick="togglePaymentModal()" class="border border-zinc-700 hover:border-fiatRed hover:bg-fiatRed/10 text-gray-300 hover:text-white font-medium py-2 px-3 sm:px-4 rounded-full transition duration-300 text-xs sm:text-base cursor-pointer whitespace-nowrap">
                     Registra tu Cuota 💳
@@ -77,16 +97,8 @@
     </header>
 
     <section class="relative flex items-center justify-center min-h-[75vh] md:min-h-[85vh] overflow-hidden px-4 text-center">
-        <div id="slideshow-container" class="absolute inset-0 z-0">
-            <div class="slide active" style="background-image: url('elite1.jpeg');"><div class="absolute inset-0 bg-black/40"></div></div>
-            <div class="slide" style="background-image: url('elite2.jpeg');"><div class="absolute inset-0 bg-black/40"></div></div>
-            <div class="slide" style="background-image: url('elite3.jpeg');"><div class="absolute inset-0 bg-black/40"></div></div>
-            <div class="slide" style="background-image: url('elite4.jpeg');"><div class="absolute inset-0 bg-black/40"></div></div>
-            <div class="slide" style="background-image: url('elite5.jpeg');"><div class="absolute inset-0 bg-black/40"></div></div>
-            <div class="slide" style="background-image: url('elite6.jpg');"><div class="absolute inset-0 bg-black/40"></div></div>
-            <div class="slide" style="background-image: url('elite7.jpg');"><div class="absolute inset-0 bg-black/40"></div></div>
-            <div class="slide" style="background-image: url('elite8.jpg');"><div class="absolute inset-0 bg-black/40"></div></div>
-        </div>
+        <!-- Las fotos del banner se cargan desde la lista SLIDES (ver el script al final) -->
+        <div id="slideshow-container" class="absolute inset-0 z-0"></div>
 
         <div class="relative z-10 max-w-3xl mx-auto space-y-6 animate-fade-in">
             <span class="text-fiatRed font-bold tracking-widest text-sm uppercase bg-black/60 px-4 py-1.5 rounded-full inline-block border border-red-900/30">Comunidad Exclusiva</span>
@@ -96,6 +108,9 @@
             <p class="text-xl sm:text-2xl text-gray-200 font-light italic max-w-2xl mx-auto bg-black/50 p-6 rounded-xl backdrop-blur-sm border border-zinc-800">
                 "Entusiastas de la pasión automotriz Fiat, somos una minoría selecta y cualitativa…"
             </p>
+            <a href="#vehiculos" class="inline-block border border-white/30 hover:border-white bg-black/40 hover:bg-black/60 text-white font-medium py-2.5 px-6 rounded-full transition duration-300">
+                Conoce nuestros vehículos
+            </a>
         </div>
     </section>
 
@@ -119,6 +134,23 @@
         </div>
     </section>
 
+    <!-- ================== CONOCE NUESTROS VEHÍCULOS ================== -->
+    <section id="vehiculos" class="border-t border-zinc-900 bg-darkElite scroll-mt-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+            <div class="max-w-2xl mb-10">
+                <h2 class="text-3xl sm:text-5xl font-extrabold tracking-tight text-white">Conoce nuestros vehículos</h2>
+                <p class="text-gray-400 text-lg mt-3">Los carros de los integrantes del Team, organizados por modelo y fase.</p>
+            </div>
+
+            <div id="vehiculoTabs" role="tablist" aria-label="Modelos" class="tabs-scroll flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0"></div>
+
+            <div id="vehiculoPanel" role="tabpanel" class="mt-8">
+                <p id="vehiculoDesc" class="hidden text-gray-400 mb-6 max-w-2xl"></p>
+                <div id="vehiculoGrid" class="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4"></div>
+            </div>
+        </div>
+    </section>
+
     <footer class="border-t border-zinc-900 bg-black py-10 text-center text-sm text-gray-600 flex flex-col items-center space-y-4">
         <div>
             <a href="https://www.instagram.com/elitefiatautomobile" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-2 text-gray-500 hover:text-fiatRed transition duration-300">
@@ -130,6 +162,17 @@
         </div>
         <p>&copy; 2026 Organización Élite. Hecho por J.N y para entusiastas de Fiat.</p>
     </footer>
+
+    <!-- VISOR DE FOTOS -->
+    <div id="lightbox" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/95 p-4" role="dialog" aria-modal="true" aria-label="Foto ampliada">
+        <button id="lbCerrar" aria-label="Cerrar" class="absolute top-4 right-4 text-white/70 hover:text-white text-4xl font-bold cursor-pointer leading-none">&times;</button>
+        <button id="lbPrev" aria-label="Foto anterior" class="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 text-white text-2xl cursor-pointer">&#8249;</button>
+        <figure class="max-w-5xl w-full flex flex-col items-center">
+            <img id="lbImg" alt="" class="max-h-[80vh] w-auto max-w-full object-contain rounded-lg">
+            <figcaption id="lbCaption" class="text-gray-300 mt-4 text-center"></figcaption>
+        </figure>
+        <button id="lbNext" aria-label="Foto siguiente" class="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 text-white text-2xl cursor-pointer">&#8250;</button>
+    </div>
 
     <!-- MODAL REGISTRO -->
     <div id="registerModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm transition-opacity duration-300 opacity-0">
@@ -263,17 +306,214 @@
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxUuVl9TBud2BrH4y7K2gt3PMc7OlEBw0INUFD_tCqnLGDFg_wVbUQk6W7Lg1am0Tc/exec";
         const WHATSAPP_NUMERO = "584241947654";
         const MAX_MB = 5;
+
+        // Fotos del banner principal (en orden). Puedes poner el nombre
+        // sin extensión: la página prueba .jpg, .jpeg y .png sola.
+        const SLIDES = [
+            'elite1', 'elite2', 'elite3', 'elite4', 'elite5',
+            'elite6', 'elite7', 'elite8', 'elite9', 'elite10'
+        ];
+
+        // Sección "Conoce nuestros vehículos".
+        // - nombre: el texto de la pestaña.
+        // - descripcion: opcional, un párrafo corto arriba de las fotos.
+        // - fotos: { archivo, titulo }. El título sale sobre la foto y en el visor.
+        const VEHICULOS = [
+            {
+                id: 'uno',
+                nombre: 'Fiat Uno',
+                descripcion: '',
+                fotos: []
+            },
+            {
+                id: 'fase1',
+                nombre: 'Fase 1',
+                descripcion: '',
+                fotos: [
+                    { archivo: 'fase1', titulo: '' }
+                ]
+            },
+            {
+                id: 'fase2',
+                nombre: 'Fase 2',
+                descripcion: '',
+                fotos: []
+            },
+            {
+                id: 'fase3',
+                nombre: 'Fase 3',
+                descripcion: '',
+                fotos: [
+                    { archivo: 'fase3-1', titulo: '' },
+                    { archivo: 'fase3-2', titulo: '' },
+                    { archivo: 'fase3-3', titulo: '' },
+                    { archivo: 'fase3-4', titulo: '' }
+                ]
+            },
+            {
+                id: 'siena',
+                nombre: 'Fiat Siena',
+                descripcion: '',
+                fotos: [
+                    { archivo: 'siena', titulo: '' }
+                ]
+            }
+        ];
         // ===================================================
 
+        // --- Carga de imágenes tolerante a la extensión ---
+        const EXTENSIONES = ['.jpg', '.jpeg', '.JPG', '.JPEG', '.png', '.webp'];
+        const cacheImg = {};
+        function cargarImagen(base) {
+            if (cacheImg[base]) return cacheImg[base];
+            const candidatos = /\.(jpe?g|png|webp)$/i.test(base)
+                ? [base]
+                : EXTENSIONES.map(ext => base + ext);
+            cacheImg[base] = candidatos.reduce(
+                (anterior, url) => anterior.catch(() => new Promise((res, rej) => {
+                    const im = new Image();
+                    im.onload = () => res(url);
+                    im.onerror = rej;
+                    im.src = url;
+                })),
+                Promise.reject()
+            );
+            return cacheImg[base];
+        }
+
         // --- BANNER DINÁMICO ---
-        const slides = document.querySelectorAll('.slide');
-        let currentSlideIdx = 0;
+        const slideContainer = document.getElementById('slideshow-container');
+        SLIDES.forEach((base, i) => {
+            const div = document.createElement('div');
+            div.className = 'slide' + (i === 0 ? ' active' : '');
+            div.innerHTML = '<div class="absolute inset-0 bg-black/40"></div>';
+            slideContainer.appendChild(div);
+            cargarImagen(base)
+                .then(url => { div.style.backgroundImage = `url('${url}')`; })
+                .catch(() => {
+                    const eraActiva = div.classList.contains('active');
+                    div.remove();
+                    if (eraActiva) slideContainer.querySelector('.slide')?.classList.add('active');
+                });
+        });
+
         function nextSlide() {
-            slides[currentSlideIdx].classList.remove('active');
-            currentSlideIdx = (currentSlideIdx + 1) % slides.length;
-            slides[currentSlideIdx].classList.add('active');
+            const slides = [...slideContainer.querySelectorAll('.slide')];
+            if (slides.length < 2) return;
+            let i = slides.findIndex(s => s.classList.contains('active'));
+            if (i === -1) { slides[0].classList.add('active'); return; }
+            slides[i].classList.remove('active');
+            slides[(i + 1) % slides.length].classList.add('active');
         }
         setInterval(nextSlide, 4000);
+
+        // --- CONOCE NUESTROS VEHÍCULOS ---
+        const tabsEl = document.getElementById('vehiculoTabs');
+        const gridEl = document.getElementById('vehiculoGrid');
+        const descEl = document.getElementById('vehiculoDesc');
+
+        VEHICULOS.forEach(v => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.role = 'tab';
+            btn.dataset.id = v.id;
+            btn.className = 'veh-tab shrink-0 border border-zinc-700 hover:border-fiatRed text-gray-300 hover:text-white font-semibold py-2.5 px-5 rounded-full transition cursor-pointer whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-white';
+            btn.textContent = v.nombre;
+            btn.addEventListener('click', () => mostrarVehiculo(v.id));
+            tabsEl.appendChild(btn);
+        });
+
+        function mostrarVehiculo(id) {
+            const v = VEHICULOS.find(x => x.id === id);
+            if (!v) return;
+
+            tabsEl.querySelectorAll('.veh-tab').forEach(b =>
+                b.setAttribute('aria-selected', b.dataset.id === id ? 'true' : 'false'));
+
+            descEl.textContent = v.descripcion || '';
+            descEl.classList.toggle('hidden', !v.descripcion);
+            gridEl.innerHTML = '';
+
+            if (!v.fotos.length) {
+                gridEl.innerHTML = `
+                    <div class="col-span-full border border-dashed border-zinc-800 rounded-2xl py-16 px-6 text-center">
+                        <p class="text-white font-semibold text-lg">Aún no hay fotos del ${v.nombre}</p>
+                        <p class="text-gray-500 mt-2">¿Tienes uno? Únete al Team y muéstralo aquí.</p>
+                        <button type="button" onclick="toggleModal()" class="mt-5 bg-fiatRed hover:bg-red-700 text-white font-bold py-2.5 px-6 rounded-full transition cursor-pointer">Únete al Team</button>
+                    </div>`;
+                return;
+            }
+
+            v.fotos.forEach((foto, i) => {
+                const card = document.createElement('button');
+                card.type = 'button';
+                card.className = 'foto-card relative block w-full aspect-[4/3] overflow-hidden rounded-xl bg-zinc-900 animate-pulse cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-fiatRed';
+                card.setAttribute('aria-label', foto.titulo || `${v.nombre}, foto ${i + 1}`);
+                // La primera foto ocupa dos columnas para darle protagonismo
+                if (i === 0 && v.fotos.length > 2) card.classList.add('col-span-2', 'row-span-2', 'aspect-auto');
+                gridEl.appendChild(card);
+
+                cargarImagen(foto.archivo).then(url => {
+                    card.classList.remove('animate-pulse');
+                    card.dataset.url = url;
+                    card.dataset.titulo = foto.titulo || '';
+                    card.innerHTML = `
+                        <img src="${url}" alt="${foto.titulo || v.nombre}" loading="lazy" class="absolute inset-0 w-full h-full object-cover">
+                        ${foto.titulo ? `<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent text-left text-white text-sm sm:text-base font-semibold px-4 pt-8 pb-3">${foto.titulo}</span>` : ''}`;
+                    card.addEventListener('click', () => abrirLightbox(card));
+                }).catch(() => card.remove());
+            });
+        }
+
+        mostrarVehiculo(VEHICULOS.find(v => v.fotos.length)?.id || VEHICULOS[0].id);
+
+        // --- VISOR DE FOTOS ---
+        const lightbox = document.getElementById('lightbox');
+        const lbImg = document.getElementById('lbImg');
+        const lbCaption = document.getElementById('lbCaption');
+        let lbFotos = [];
+        let lbIndex = 0;
+
+        function abrirLightbox(card) {
+            lbFotos = [...gridEl.querySelectorAll('[data-url]')];
+            lbIndex = lbFotos.indexOf(card);
+            pintarLightbox();
+            lightbox.classList.remove('hidden');
+            lightbox.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+        function cerrarLightbox() {
+            lightbox.classList.add('hidden');
+            lightbox.classList.remove('flex');
+            document.body.style.overflow = '';
+        }
+        function pintarLightbox() {
+            const card = lbFotos[lbIndex];
+            lbImg.src = card.dataset.url;
+            lbImg.alt = card.dataset.titulo || card.getAttribute('aria-label');
+            lbCaption.textContent = card.dataset.titulo;
+            const variasFotos = lbFotos.length > 1;
+            document.getElementById('lbPrev').classList.toggle('hidden', !variasFotos);
+            document.getElementById('lbNext').classList.toggle('hidden', !variasFotos);
+        }
+        function moverLightbox(paso) {
+            lbIndex = (lbIndex + paso + lbFotos.length) % lbFotos.length;
+            pintarLightbox();
+        }
+        document.getElementById('lbCerrar').addEventListener('click', cerrarLightbox);
+        document.getElementById('lbPrev').addEventListener('click', () => moverLightbox(-1));
+        document.getElementById('lbNext').addEventListener('click', () => moverLightbox(1));
+        lightbox.addEventListener('click', e => { if (e.target === lightbox) cerrarLightbox(); });
+
+        // Deslizar con el dedo en el celular
+        let toqueX = null;
+        lightbox.addEventListener('touchstart', e => { toqueX = e.touches[0].clientX; }, { passive: true });
+        lightbox.addEventListener('touchend', e => {
+            if (toqueX === null || lbFotos.length < 2) return;
+            const dx = e.changedTouches[0].clientX - toqueX;
+            if (Math.abs(dx) > 50) moverLightbox(dx < 0 ? 1 : -1);
+            toqueX = null;
+        });
 
         // --- Helper para abrir/cerrar modales ---
         function makeToggle(modalEl, onClose) {
@@ -336,8 +576,14 @@
         const togglePaymentModal = makeToggle(paymentModal, resetPaymentModal);
         paymentModal.addEventListener('click', e => { if (e.target === paymentModal) togglePaymentModal(); });
 
-        // Cerrar con Escape
+        // Teclado: Escape cierra lo que esté abierto; flechas en el visor
         document.addEventListener('keydown', e => {
+            if (!lightbox.classList.contains('hidden')) {
+                if (e.key === 'Escape') cerrarLightbox();
+                else if (e.key === 'ArrowRight' && lbFotos.length > 1) moverLightbox(1);
+                else if (e.key === 'ArrowLeft' && lbFotos.length > 1) moverLightbox(-1);
+                return;
+            }
             if (e.key !== 'Escape') return;
             if (!paymentModal.classList.contains('hidden')) togglePaymentModal();
             else if (!modal.classList.contains('hidden')) toggleModal();
