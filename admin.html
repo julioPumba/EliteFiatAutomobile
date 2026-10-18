@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Administrativo - Organización Élite</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <script>
+        tailwind.config = { theme: { extend: { colors: { fiatRed: '#990000', darkElite: '#111111' } } } }
+    </script>
+    <style>
+        .campo {
+            width: 100%; background: #18181b; border: 1px solid #27272a; border-radius: .5rem;
+            padding: .7rem 1rem; color: #fff; transition: border-color .2s;
+        }
+        .campo:focus { outline: none; border-color: #990000; }
+        .etiqueta {
+            display: block; font-size: .75rem; font-weight: 600; text-transform: uppercase;
+            letter-spacing: .05em; color: #71717a; margin-bottom: .25rem;
+        }
+        .tarjeta { background: #09090b; border: 1px solid #27272a; border-radius: 1rem; }
+        button:focus-visible, a:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+        .dia { min-height: 64px; }
+        @media (min-width: 640px) { .dia { min-height: 84px; } }
+    </style>
+</head>
+<body class="bg-darkElite text-gray-100 font-sans antialiased selection:bg-fiatRed selection:text-white">
+
+<!-- ================== LOGIN ================== -->
+<main id="vistaLogin" class="hidden min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-sm tarjeta overflow-hidden shadow-2xl">
+        <div class="bg-gradient-to-r from-fiatRed to-red-900 p-6">
+            <img src="logo.png" alt="Organización Élite" class="h-14 w-auto mb-3">
+            <h1 class="text-2xl font-black tracking-wide">ADMINISTRATIVO</h1>
+            <p class="text-red-100 text-sm mt-1">Acceso solo para administradores.</p>
+        </div>
+        <form id="formLogin" class="p-6 space-y-4">
+            <div>
+                <label class="etiqueta" for="usuario">Usuario</label>
+                <input id="usuario" type="text" autocomplete="username" autocapitalize="none" required class="campo">
+            </div>
+            <div>
+                <label class="etiqueta" for="clave">Clave</label>
+                <input id="clave" type="password" autocomplete="current-password" required class="campo">
+            </div>
+            <p id="loginError" class="hidden text-sm text-red-400 bg-red-950/40 border border-red-900/50 rounded-lg px-3 py-2"></p>
+            <button type="submit" class="w-full bg-fiatRed hover:bg-red-700 text-white font-bold py-3 rounded-lg transition cursor-pointer">Entrar</button>
+        </form>
+        <a href="index.html" class="block text-center text-sm text-gray-500 hover:text-white pb-6">Volver a la página</a>
+    </div>
+</main>
+
+<!-- ================== PANEL ================== -->
+<div id="vistaApp" class="hidden min-h-screen">
+    <header class="border-b border-zinc-800 bg-black/80 backdrop-blur-md sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
+            <a href="index.html" class="flex items-center gap-3 min-w-0">
+                <img src="logo.png" alt="" class="h-10 w-auto shrink-0">
+                <span class="font-black tracking-wide">ADMINISTRATIVO</span>
+            </a>
+            <div class="flex items-center gap-3">
+                <span id="adminNombre" class="hidden sm:inline text-sm text-gray-500"></span>
+                <button id="btnSalir" class="border border-zinc-700 hover:border-fiatRed text-gray-300 hover:text-white text-sm py-1.5 px-4 rounded-full transition cursor-pointer">Salir</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+        <div>
+            <h2 class="text-3xl font-extrabold tracking-tight">Resumen <span id="anioTitulo"></span></h2>
+            <p class="text-gray-400 mt-1">Cuota mensual: <span id="cuotaTexto" class="text-white font-semibold"></span></p>
+        </div>
+
+        <!-- Montos -->
+        <div id="kpis" class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4"></div>
+
+        <!-- Gráficos -->
+        <div class="grid lg:grid-cols-3 gap-4">
+            <section class="tarjeta p-5 lg:col-span-2">
+                <h3 class="font-bold text-lg">Montos por mes</h3>
+                <p class="text-sm text-gray-500 mb-4">Cuotas confirmadas y por confirmar, según el mes que pagan.</p>
+                <div class="relative h-64"><canvas id="graficoMeses" aria-label="Gráfico de montos por mes" role="img"></canvas></div>
+            </section>
+            <section class="tarjeta p-5">
+                <h3 class="font-bold text-lg">Estado de las cuotas</h3>
+                <p class="text-sm text-gray-500 mb-4">Montos del año hasta hoy.</p>
+                <div class="relative h-64"><canvas id="graficoEstado" aria-label="Gráfico del estado de las cuotas" role="img"></canvas></div>
+            </section>
+        </div>
+
+        <!-- Calendario -->
+        <div class="grid lg:grid-cols-5 gap-4">
+            <section class="tarjeta p-5 lg:col-span-3">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-bold text-lg">Calendario de pagos</h3>
+                    <div class="flex items-center gap-2">
+                        <button id="calPrev" aria-label="Mes anterior" class="w-9 h-9 rounded-full border border-zinc-700 hover:border-white text-lg cursor-pointer">‹</button>
+                        <span id="calTitulo" class="font-semibold w-36 text-center capitalize"></span>
+                        <button id="calNext" aria-label="Mes siguiente" class="w-9 h-9 rounded-full border border-zinc-700 hover:border-white text-lg cursor-pointer">›</button>
+                    </div>
+                </div>
+                <div class="grid grid-cols-7 gap-1 text-center text-xs font-semibold text-gray-500 mb-1">
+                    <span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span><span>Dom</span>
+                </div>
+                <div id="calGrid" class="grid grid-cols-7 gap-1"></div>
+                <div class="flex flex-wrap gap-4 mt-4 text-xs text-gray-400">
+                    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-green-500"></span>Pago confirmado</span>
+                    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>Por confirmar</span>
+                </div>
+            </section>
+            <section class="tarjeta p-5 lg:col-span-2">
+                <h3 id="detalleTitulo" class="font-bold text-lg mb-4"></h3>
+                <div id="detalleMes" class="space-y-2"></div>
+                <div id="detalleDia" class="mt-6"></div>
+            </section>
+        </div>
+
+        <!-- Integrantes -->
+        <section class="tarjeta overflow-hidden">
+            <div class="p-5 border-b border-zinc-800">
+                <h3 class="font-bold text-lg">Integrantes</h3>
+                <p class="text-sm text-gray-500">Toca un integrante para ver sus pagos, deudas y premios.</p>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-zinc-950 border-b border-zinc-800 text-left text-xs uppercase tracking-wider text-gray-400">
+                        <tr>
+                            <th class="px-5 py-3">Integrante</th>
+                            <th class="px-5 py-3">Cuotas pagadas</th>
+                            <th class="px-5 py-3">Deuda</th>
+                            <th class="px-5 py-3">Premios</th>
+                            <th class="px-5 py-3">Grúas</th>
+                            <th class="px-5 py-3"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="listaIntegrantes"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</div>
+
+<!-- ================== DETALLE DE INTEGRANTE ================== -->
+<div id="modalIntegrante" class="fixed inset-0 z-50 hidden items-end sm:items-center justify-center bg-black/85 backdrop-blur-sm sm:p-4" role="dialog" aria-modal="true" aria-labelledby="miNombre">
+    <div class="bg-zinc-950 border border-zinc-800 w-full sm:max-w-2xl max-h-[92vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl shadow-2xl">
+        <div class="sticky top-0 bg-zinc-950/95 backdrop-blur border-b border-zinc-800 p-5 flex items-start justify-between gap-4">
+            <div>
+                <h3 id="miNombre" class="text-2xl font-extrabold"></h3>
+                <p id="miDatos" class="text-gray-400 text-sm mt-1"></p>
+            </div>
+            <button id="miCerrar" aria-label="Cerrar" class="text-white/70 hover:text-white text-3xl leading-none cursor-pointer">&times;</button>
+        </div>
+        <div id="miCuerpo" class="p-5 space-y-6"></div>
+    </div>
+</div>
+
+<script>
+// =====================================================================
+//  ACCESO TEMPORAL
+//  Ojo: esta clave se puede ver con "Ver código fuente". Úsala solo
+//  mientras pruebas; para datos reales conecta el Apps Script.
+// =====================================================================
+const USUARIOS = [
+    { usuario: 'user1', clave: '123456', nombre: 'Administrador' }
+];
+
+// =====================================================================
+//  DATOS (de prueba). Edita aquí mientras no esté conectado a Google.
+// =====================================================================
+const CONFIG = { cuotaMensual: 10, moneda: '$' };
+
+const INTEGRANTES = [
+    {
+        id: 'julio-navas',
+        nombre: 'Julio', apellido: 'Navas',
+        cedula: 'V-00000000',
+        carro: 'Fiat Palio Fase 3', anioCarro: '2008',
+        telefono: '',
+        ingreso: '2026-01',   // primer mes que debe pagar (AAAA-MM)
+        activo: true
+    }
+];
+
+// mes = mes que se está pagando | fecha = día en que pagó | estado: confirmado o pendiente
+const PAGOS = [
+    { integranteId: 'julio-navas', mes: '2026-01', fecha: '2026-01-05', monto: 10, metodo: 'Pago Móvil', referencia: '001245', estado: 'confirmado' },
+    { integranteId: 'julio-navas', mes: '2026-02', fecha: '2026-02-04', monto: 10, metodo: 'Pago Móvil', referencia: '002318', estado: 'confirmado' },
+    { integranteId: 'julio-navas', mes: '2026-03', fecha: '2026-03-06', monto: 10, metodo: 'Zelle',      referencia: '003902', estado: 'confirmado' },
+    { integranteId: 'julio-navas', mes: '2026-04', fecha: '2026-04-03', monto: 10, metodo: 'Pago Móvil', referencia: '004117', estado: 'confirmado' },
+    { integranteId: 'julio-navas', mes: '2026-05', fecha: '2026-05-05', monto: 10, metodo: 'Banesco',    referencia: '005560', estado: 'confirmado' },
+    { integranteId: 'julio-navas', mes: '2026-06', fecha: '2026-06-05', monto: 10, metodo: 'Pago Móvil', referencia: '006284', estado: 'confirmado' },
+    { integranteId: 'julio-navas', mes: '2026-07', fecha: '2026-07-04', monto: 10, metodo: 'Pago Móvil', referencia: '007731', estado: 'confirmado' },
+    { integranteId: 'julio-navas', mes: '2026-08', fecha: '2026-08-06', monto: 10, metodo: 'Zelle',      referencia: '008045', estado: 'confirmado' },
+    // septiembre sin pago: aparece como deuda
+    { integranteId: 'julio-navas', mes: '2026-10', fecha: '2026-10-15', monto: 10, metodo: 'Pago Móvil', referencia: '004532', estado: 'pendiente' }
+];
+
+const PREMIOS = [
+    { integranteId: 'julio-navas', fecha: '2026-03-15', premio: 'Kit de limpieza para el carro', detalle: 'Ganador del concurso de la rodada de marzo' },
+    { integranteId: 'julio-navas', fecha: '2026-07-20', premio: 'Placa conmemorativa Élite',     detalle: 'Mejor restauración del aniversario' }
+];
+
+const GRUAS = [
+    { integranteId: 'julio-navas', fecha: '2026-05-18', detalle: 'Remolque por falla de la bomba de gasolina', costo: 0 }
+];
+// =====================================================================
+
+const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const MESES_C = MESES.map(m => m.slice(0, 3));
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+const pad = n => String(n).padStart(2, '0');
+const dinero = n => `${CONFIG.moneda}${Number(n || 0).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const nombre = i => `${i.nombre} ${i.apellido}`.trim();
+const fechaLarga = iso => { const [y, m, d] = iso.split('-').map(Number); return `${d} de ${MESES[m - 1].toLowerCase()} de ${y}`; };
+
+const HOY = new Date();
+const ANIO = HOY.getFullYear();
+const MES_ACTUAL = `${ANIO}-${pad(HOY.getMonth() + 1)}`;
+const HOY_ISO = `${ANIO}-${pad(HOY.getMonth() + 1)}-${pad(HOY.getDate())}`;
+
+const st = { calAnio: ANIO, calMes: HOY.getMonth(), diaSel: null };
+let graficos = [];
+
+// --------------------- Lógica de cuotas ---------------------
+// confirmado | pendiente | deuda | porPagar (mes en curso) | futuro | na (antes de ingresar)
+function estadoMes(i, mes) {
+    const pago = PAGOS.find(p => p.integranteId === i.id && p.mes === mes);
+    if (pago) return pago.estado;
+    if (mes < i.ingreso) return 'na';
+    if (mes > MES_ACTUAL) return 'futuro';
+    if (mes === MES_ACTUAL) return 'porPagar';
+    return 'deuda';
+}
+function mesesDelAnio(anio) { return MESES.map((_, k) => `${anio}-${pad(k + 1)}`); }
+function deudasDe(i) {
+    const out = [];
+    let [y, m] = i.ingreso.split('-').map(Number);
+    while (`${y}-${pad(m)}` < MES_ACTUAL) {
+        const mes = `${y}-${pad(m)}`;
+        if (estadoMes(i, mes) === 'deuda') out.push(mes);
+        m++; if (m > 12) { m = 1; y++; }
+    }
+    return out;
+}
+const activos = () => INTEGRANTES.filter(i => i.activo);
+const nombreMes = mes => { const [y, m] = mes.split('-').map(Number); return `${MESES[m - 1]} ${y}`; };
+
+// --------------------- Login ---------------------
+function sesion() { try { return JSON.parse(sessionStorage.getItem('eliteAdmin') || 'null'); } catch { return null; } }
+
+$('formLogin').addEventListener('submit', e => {
+    e.preventDefault();
+    const u = $('usuario').value.trim().toLowerCase();
+    const c = $('clave').value;
+    const admin = USUARIOS.find(x => x.usuario.toLowerCase() === u && x.clave === c);
+    if (!admin) {
+        $('loginError').textContent = 'Usuario o clave incorrectos.';
+        $('loginError').classList.remove('hidden');
+        $('clave').value = '';
+        $('clave').focus();
+        return;
+    }
+    try { sessionStorage.setItem('eliteAdmin', JSON.stringify({ usuario: admin.usuario, nombre: admin.nombre })); } catch {}
+    $('clave').value = '';
+    entrar(admin);
+});
+
+$('btnSalir').addEventListener('click', () => {
+    try { sessionStorage.removeItem('eliteAdmin'); } catch {}
+    graficos.forEach(g => g.destroy()); graficos = [];
+    $('vistaApp').classList.add('hidden');
+    $('loginError').classList.add('hidden');
+    $('vistaLogin').classList.remove('hidden');
+    $('usuario').focus();
+});
+
+function entrar(admin) {
+    $('vistaLogin').classList.add('hidden');
+    $('vistaApp').classList.remove('hidden');
+    $('adminNombre').textContent = admin.nombre || admin.usuario;
+    $('anioTitulo').textContent = ANIO;
+    $('cuotaTexto').textContent = dinero(CONFIG.cuotaMensual);
+    renderKpis();
+    renderGraficos();
+    renderCalendario();
+    renderIntegrantes();
+}
+
+// --------------------- Montos ---------------------
+function totalesAnio() {
+    const enAnio = PAGOS.filter(p => p.mes.startsWith(ANIO + '-'));
+    const confirmado = enAnio.filter(p => p.estado === 'confirmado').reduce((s, p) => s + Number(p.monto), 0);
+    const pendiente = enAnio.filter(p => p.estado === 'pendiente').reduce((s, p) => s + Number(p.monto), 0);
+    const deudaMeses = activos().reduce((s, i) => s + deudasDe(i).length, 0);
+    return { confirmado, pendiente, deuda: deudaMeses * CONFIG.cuotaMensual, deudaMeses };
+}
+
+function renderKpis() {
+    const t = totalesAnio();
+    const conDeuda = activos().filter(i => deudasDe(i).length).length;
+    const kpi = (titulo, valor, nota, color) => `
+        <div class="tarjeta p-4 sm:p-5">
+            <p class="text-sm text-gray-400">${titulo}</p>
+            <p class="text-2xl sm:text-3xl font-extrabold mt-1 ${color}">${valor}</p>
+            <p class="text-xs text-gray-500 mt-1">${nota}</p>
+        </div>`;
+    $('kpis').innerHTML =
+        kpi('Recaudado', dinero(t.confirmado), 'Cuotas confirmadas del año', 'text-green-400') +
+        kpi('Por confirmar', dinero(t.pendiente), 'Pagos reportados sin validar', 'text-amber-300') +
+        kpi('En deuda', dinero(t.deuda), `${t.deudaMeses} ${t.deudaMeses === 1 ? 'mes' : 'meses'} entre ${conDeuda} ${conDeuda === 1 ? 'integrante' : 'integrantes'}`, t.deuda ? 'text-red-400' : 'text-white') +
+        kpi('Integrantes activos', activos().length, 'En la organización', 'text-white');
+}
+
+function renderGraficos() {
+    graficos.forEach(g => g.destroy()); graficos = [];
+    if (typeof Chart === 'undefined') {
+        ['graficoMeses', 'graficoEstado'].forEach(id => {
+            $(id).parentElement.innerHTML = '<p class="text-gray-500 text-sm">No se pudieron cargar los gráficos. Revisa tu conexión a internet.</p>';
+        });
+        return;
+    }
+    Chart.defaults.color = '#a1a1aa';
+    Chart.defaults.font.family = 'ui-sans-serif, system-ui, sans-serif';
+    Chart.defaults.borderColor = '#27272a';
+
+    const meses = mesesDelAnio(ANIO);
+    const suma = (mes, estado) => PAGOS.filter(p => p.mes === mes && p.estado === estado).reduce((s, p) => s + Number(p.monto), 0);
+
+    graficos.push(new Chart($('graficoMeses'), {
+        type: 'bar',
+        data: {
+            labels: MESES_C,
+            datasets: [
+                { label: 'Confirmado', data: meses.map(m => suma(m, 'confirmado')), backgroundColor: '#16a34a', borderRadius: 6, stack: 's' },
+                { label: 'Por confirmar', data: meses.map(m => suma(m, 'pendiente')), backgroundColor: '#f59e0b', borderRadius: 6, stack: 's' }
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { boxWidth: 12, boxHeight: 12 } },
+                tooltip: { callbacks: { label: c => `${c.dataset.label}: ${dinero(c.parsed.y)}` } }
+            },
+            scales: {
+                x: { grid: { display: false } },
+                y: { beginAtZero: true, ticks: { callback: v => dinero(v), precision: 0 } }
+            }
+        }
+    }));
+
+    const t = totalesAnio();
+    graficos.push(new Chart($('graficoEstado'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Confirmado', 'Por confirmar', 'En deuda'],
+            datasets: [{ data: [t.confirmado, t.pendiente, t.deuda], backgroundColor: ['#16a34a', '#f59e0b', '#dc2626'], borderColor: '#09090b', borderWidth: 3 }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false, cutout: '62%',
+            plugins: {
+                legend: { position: 'bottom', labels: { boxWidth: 12, boxHeight: 12 } },
+                tooltip: { callbacks: { label: c => `${c.label}: ${dinero(c.parsed)}` } }
+            }
+        }
+    }));
+}
+
+// --------------------- Calendario ---------------------
+const ESTILO = {
+    confirmado: { txt: 'Pagado',        cls: 'bg-green-600/20 text-green-400 border-green-700/60' },
+    pendiente:  { txt: 'Por confirmar', cls: 'bg-amber-500/15 text-amber-300 border-amber-600/50' },
+    deuda:      { txt: 'Debe',          cls: 'bg-red-600/20 text-red-400 border-red-800/70' },
+    porPagar:   { txt: 'Por pagar',     cls: 'bg-zinc-800 text-gray-300 border-zinc-700' },
+    futuro:     { txt: '',              cls: 'border-zinc-800 text-zinc-600' },
+    na:         { txt: '',              cls: 'border-transparent text-zinc-700' }
+};
+
+function renderCalendario() {
+    const y = st.calAnio, m = st.calMes;
+    $('calTitulo').textContent = `${MESES[m]} ${y}`;
+    const offset = (new Date(y, m, 1).getDay() + 6) % 7;
+    const dias = new Date(y, m + 1, 0).getDate();
+    let html = '<div></div>'.repeat(offset);
+
+    for (let d = 1; d <= dias; d++) {
+        const iso = `${y}-${pad(m + 1)}-${pad(d)}`;
+        const pagosDia = PAGOS.filter(p => p.fecha === iso);
+        const conf = pagosDia.filter(p => p.estado === 'confirmado');
+        const pend = pagosDia.filter(p => p.estado === 'pendiente');
+        const esHoy = iso === HOY_ISO, sel = iso === st.diaSel;
+        const marca = (lista, color) => lista.length
+            ? `<span class="flex items-center gap-1 text-[10px] sm:text-xs font-semibold ${color}"><span class="w-2 h-2 rounded-full ${color.replace('text-', 'bg-')}"></span><span class="hidden sm:inline">${dinero(lista.reduce((s, p) => s + Number(p.monto), 0))}</span></span>`
+            : '';
+        html += `<button type="button" data-dia="${iso}" aria-label="${fechaLarga(iso)}${pagosDia.length ? ', ' + pagosDia.length + ' pago(s)' : ''}"
+            class="dia rounded-lg border p-1.5 sm:p-2 text-left flex flex-col gap-1 transition cursor-pointer
+            ${sel ? 'border-white bg-zinc-800' : pagosDia.length ? 'border-zinc-700 bg-zinc-900 hover:border-zinc-500' : 'border-zinc-900 hover:border-zinc-700'}">
+            <span class="text-xs sm:text-sm font-semibold ${esHoy ? 'bg-fiatRed text-white rounded-full w-6 h-6 flex items-center justify-center' : 'text-gray-300'}">${d}</span>
+            ${marca(conf, 'text-green-400')}${marca(pend, 'text-amber-400')}
+        </button>`;
+    }
+    $('calGrid').innerHTML = html;
+    renderDetalleMes();
+}
+
+function renderDetalleMes() {
+    const mes = `${st.calAnio}-${pad(st.calMes + 1)}`;
+    $('detalleTitulo').textContent = `Cuotas de ${nombreMes(mes).toLowerCase()}`;
+    const filas = activos().map(i => {
+        const e = estadoMes(i, mes);
+        if (e === 'na') return '';
+        const pago = PAGOS.find(p => p.integranteId === i.id && p.mes === mes);
+        const s = ESTILO[e];
+        return `<button type="button" data-integrante="${esc(i.id)}" class="w-full flex items-center justify-between gap-3 p-3 rounded-lg bg-zinc-900/60 hover:bg-zinc-900 text-left cursor-pointer">
+            <span>
+                <span class="block font-semibold text-white">${esc(nombre(i))}</span>
+                <span class="block text-xs text-gray-500">${pago ? `${esc(pago.metodo)}, ref. ${esc(pago.referencia)}` : e === 'deuda' ? `Debe ${dinero(CONFIG.cuotaMensual)}` : 'Sin pago reportado'}</span>
+            </span>
+            ${s.txt ? `<span class="text-xs font-semibold px-2.5 py-1 rounded-full border whitespace-nowrap ${s.cls}">${s.txt}</span>` : ''}
+        </button>`;
+    }).join('');
+    $('detalleMes').innerHTML = filas || '<p class="text-gray-500 text-sm">No hay cuotas para este mes.</p>';
+
+    if (!st.diaSel) {
+        $('detalleDia').innerHTML = '<p class="text-sm text-gray-500">Toca un día del calendario para ver los pagos que se hicieron ese día.</p>';
+        return;
+    }
+    const pagosDia = PAGOS.filter(p => p.fecha === st.diaSel);
+    $('detalleDia').innerHTML = `
+        <h4 class="font-semibold text-white mb-2">Pagos del ${fechaLarga(st.diaSel)}</h4>
+        ${pagosDia.length ? pagosDia.map(p => {
+            const i = INTEGRANTES.find(x => x.id === p.integranteId);
+            return `<div class="flex items-center justify-between gap-3 py-2 border-b border-zinc-900 text-sm">
+                <span><span class="text-white">${esc(i ? nombre(i) : '')}</span><span class="block text-xs text-gray-500">Cuota de ${nombreMes(p.mes).toLowerCase()}, ${esc(p.metodo)}</span></span>
+                <span class="font-semibold ${p.estado === 'confirmado' ? 'text-green-400' : 'text-amber-300'}">${dinero(p.monto)}</span>
+            </div>`;
+        }).join('') : '<p class="text-sm text-gray-500">Ese día no hubo pagos.</p>'}`;
+}
+
+$('calGrid').addEventListener('click', e => {
+    const b = e.target.closest('[data-dia]');
+    if (!b) return;
+    st.diaSel = st.diaSel === b.dataset.dia ? null : b.dataset.dia;
+    renderCalendario();
+});
+$('calPrev').addEventListener('click', () => { st.calMes--; if (st.calMes < 0) { st.calMes = 11; st.calAnio--; } st.diaSel = null; renderCalendario(); });
+$('calNext').addEventListener('click', () => { st.calMes++; if (st.calMes > 11) { st.calMes = 0; st.calAnio++; } st.diaSel = null; renderCalendario(); });
+
+// --------------------- Integrantes ---------------------
+function renderIntegrantes() {
+    const lista = [...INTEGRANTES].sort((a, b) => (b.activo - a.activo) || nombre(a).localeCompare(nombre(b), 'es'));
+    $('listaIntegrantes').innerHTML = lista.length ? lista.map(i => {
+        const meses = mesesDelAnio(ANIO).filter(m => m >= i.ingreso && m <= MES_ACTUAL);
+        const pagadas = meses.filter(m => estadoMes(i, m) === 'confirmado').length;
+        const deudas = deudasDe(i);
+        const premios = PREMIOS.filter(p => p.integranteId === i.id);
+        const gruas = GRUAS.filter(g => g.integranteId === i.id);
+        return `<tr data-integrante="${esc(i.id)}" tabindex="0" class="border-b border-zinc-900 hover:bg-zinc-900/50 cursor-pointer ${i.activo ? '' : 'opacity-50'}">
+            <td class="px-5 py-4">
+                <div class="font-semibold text-white whitespace-nowrap">${esc(nombre(i))}</div>
+                <div class="text-xs text-gray-500 whitespace-nowrap">${esc(i.carro)} ${esc(i.anioCarro)}</div>
+            </td>
+            <td class="px-5 py-4 whitespace-nowrap"><span class="text-white font-semibold">${pagadas}</span><span class="text-gray-500"> de ${meses.length}</span></td>
+            <td class="px-5 py-4 whitespace-nowrap">${deudas.length
+                ? `<span class="text-xs font-semibold px-2.5 py-1 rounded-full border ${ESTILO.deuda.cls}">${dinero(deudas.length * CONFIG.cuotaMensual)}</span>`
+                : '<span class="text-xs font-semibold px-2.5 py-1 rounded-full border bg-green-600/20 text-green-400 border-green-700/60">Al día</span>'}</td>
+            <td class="px-5 py-4">${premios.length ? `<span class="text-white font-semibold">🏆 ${premios.length}</span>` : '<span class="text-gray-600">0</span>'}</td>
+            <td class="px-5 py-4">${gruas.length ? `<span class="text-white font-semibold">${gruas.length}</span>` : '<span class="text-gray-600">0</span>'}</td>
+            <td class="px-5 py-4 text-right text-gray-500">Ver ›</td>
+        </tr>`;
+    }).join('') : '<tr><td colspan="6" class="px-5 py-12 text-center text-gray-500">No hay integrantes registrados.</td></tr>';
+}
+
+// --------------------- Detalle de integrante ---------------------
+const modalI = $('modalIntegrante');
+
+function abrirIntegrante(id) {
+    const i = INTEGRANTES.find(x => x.id === id);
+    if (!i) return;
+    const deudas = deudasDe(i);
+    const premios = PREMIOS.filter(p => p.integranteId === i.id).sort((a, b) => b.fecha.localeCompare(a.fecha));
+    const gruas = GRUAS.filter(g => g.integranteId === i.id).sort((a, b) => b.fecha.localeCompare(a.fecha));
+    const pagos = PAGOS.filter(p => p.integranteId === i.id).sort((a, b) => b.fecha.localeCompare(a.fecha));
+
+    $('miNombre').textContent = nombre(i);
+    $('miDatos').textContent = [i.cedula, `${i.carro} ${i.anioCarro}`.trim(), i.telefono, `Miembro desde ${nombreMes(i.ingreso).toLowerCase()}`].filter(Boolean).join('  |  ');
+
+    const tiraMeses = mesesDelAnio(ANIO).map((mes, k) => {
+        const e = estadoMes(i, mes), s = ESTILO[e];
+        return `<div class="rounded-lg border ${s.cls} p-2 text-center" title="${MESES[k]}: ${s.txt || 'sin cuota'}">
+            <div class="text-xs font-semibold">${MESES_C[k]}</div>
+            <div class="text-sm font-bold mt-0.5">${e === 'confirmado' ? '✓' : e === 'pendiente' ? '…' : e === 'deuda' ? '✗' : '·'}</div>
+        </div>`;
+    }).join('');
+
+    const seccion = (titulo, contenido) => `<section><h4 class="font-bold text-white mb-3">${titulo}</h4>${contenido}</section>`;
+    const vacio = t => `<p class="text-sm text-gray-500">${t}</p>`;
+
+    $('miCuerpo').innerHTML =
+        seccion(`Cuotas ${ANIO}`, `<div class="grid grid-cols-4 sm:grid-cols-6 gap-2">${tiraMeses}</div>
+            <div class="flex flex-wrap gap-4 mt-3 text-xs text-gray-400">
+                <span>✓ Pagado</span><span>… Por confirmar</span><span>✗ Debe</span>
+            </div>`) +
+
+        seccion('Deudas', deudas.length
+            ? `<div class="rounded-xl border border-red-900/60 bg-red-950/30 divide-y divide-red-900/40">
+                ${deudas.map(m => `<div class="flex justify-between px-4 py-2.5 text-sm"><span class="text-red-200">Cuota de ${nombreMes(m).toLowerCase()}</span><span class="font-semibold text-red-300">${dinero(CONFIG.cuotaMensual)}</span></div>`).join('')}
+                <div class="flex justify-between px-4 py-3 font-bold"><span class="text-white">Total adeudado</span><span class="text-red-300">${dinero(deudas.length * CONFIG.cuotaMensual)}</span></div>
+               </div>`
+            : vacio('Está al día con sus cuotas.')) +
+
+        seccion('Premios', premios.length
+            ? `<div class="space-y-2">${premios.map(p => `
+                <div class="flex gap-3 p-3 rounded-xl bg-zinc-900/60">
+                    <span class="text-2xl">🏆</span>
+                    <div><p class="font-semibold text-white">${esc(p.premio)}</p><p class="text-sm text-gray-400">${esc(p.detalle)}</p><p class="text-xs text-gray-500 mt-1">${fechaLarga(p.fecha)}</p></div>
+                </div>`).join('')}</div>`
+            : vacio('Todavía no tiene premios.')) +
+
+        seccion('Uso de grúas', gruas.length
+            ? `<div class="space-y-2">${gruas.map(g => `
+                <div class="flex justify-between gap-3 p-3 rounded-xl bg-zinc-900/60 text-sm">
+                    <div><p class="text-white">${esc(g.detalle)}</p><p class="text-xs text-gray-500 mt-1">${fechaLarga(g.fecha)}</p></div>
+                    <span class="text-gray-300 whitespace-nowrap">${Number(g.costo) ? dinero(g.costo) : 'Sin costo'}</span>
+                </div>`).join('')}</div>`
+            : vacio('No ha usado grúas.')) +
+
+        seccion('Historial de pagos', pagos.length
+            ? `<div class="overflow-x-auto rounded-xl border border-zinc-800"><table class="w-full text-sm">
+                <thead class="bg-zinc-900 text-left text-xs uppercase tracking-wider text-gray-400"><tr><th class="px-3 py-2">Fecha</th><th class="px-3 py-2">Cuota</th><th class="px-3 py-2">Método</th><th class="px-3 py-2">Ref.</th><th class="px-3 py-2 text-right">Monto</th></tr></thead>
+                <tbody>${pagos.map(p => `<tr class="border-t border-zinc-900">
+                    <td class="px-3 py-2 whitespace-nowrap text-gray-300">${esc(p.fecha)}</td>
+                    <td class="px-3 py-2 whitespace-nowrap text-gray-300">${MESES_C[Number(p.mes.slice(5)) - 1]} ${p.mes.slice(0, 4)}</td>
+                    <td class="px-3 py-2 whitespace-nowrap text-gray-300">${esc(p.metodo)}</td>
+                    <td class="px-3 py-2 text-gray-400">${esc(p.referencia)}</td>
+                    <td class="px-3 py-2 text-right font-semibold whitespace-nowrap ${p.estado === 'confirmado' ? 'text-green-400' : 'text-amber-300'}">${dinero(p.monto)}${p.estado === 'pendiente' ? ' …' : ''}</td>
+                </tr>`).join('')}</tbody></table></div>`
+            : vacio('Sin pagos registrados.'));
+
+    modalI.classList.remove('hidden');
+    modalI.classList.add('flex');
+    document.body.style.overflow = 'hidden';
+    $('miCerrar').focus();
+}
+
+function cerrarIntegrante() {
+    modalI.classList.add('hidden');
+    modalI.classList.remove('flex');
+    document.body.style.overflow = '';
+}
+
+document.addEventListener('click', e => {
+    const fila = e.target.closest('[data-integrante]');
+    if (fila) abrirIntegrante(fila.dataset.integrante);
+});
+$('listaIntegrantes').addEventListener('keydown', e => {
+    const fila = e.target.closest('[data-integrante]');
+    if (fila && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); abrirIntegrante(fila.dataset.integrante); }
+});
+$('miCerrar').addEventListener('click', cerrarIntegrante);
+modalI.addEventListener('click', e => { if (e.target === modalI) cerrarIntegrante(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !modalI.classList.contains('hidden')) cerrarIntegrante(); });
+
+// --------------------- Inicio ---------------------
+const s = sesion();
+if (s) entrar(s);
+else { $('vistaLogin').classList.remove('hidden'); $('usuario').focus(); }
+</script>
+</body>
+</html>
