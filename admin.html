@@ -7,6 +7,7 @@
     <title>Administrativo - Organización Élite</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script>
         tailwind.config = { theme: { extend: { colors: { fiatRed: '#990000', darkElite: '#111111' } } } }
     </script>
@@ -61,16 +62,23 @@
                 <span class="font-black tracking-wide">ADMINISTRATIVO</span>
             </a>
             <div class="flex items-center gap-3">
-                <span id="adminNombre" class="hidden sm:inline text-sm text-gray-500"></span>
+                <button id="btnRegistrar" class="bg-fiatRed hover:bg-red-700 text-white font-bold text-sm py-1.5 px-4 rounded-full transition cursor-pointer whitespace-nowrap">+ Registrar</button>
+                <span id="adminNombre" class="hidden md:inline text-sm text-gray-500"></span>
                 <button id="btnSalir" class="border border-zinc-700 hover:border-fiatRed text-gray-300 hover:text-white text-sm py-1.5 px-4 rounded-full transition cursor-pointer">Salir</button>
             </div>
         </div>
     </header>
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-6">
-        <div>
-            <h2 class="text-3xl font-extrabold tracking-tight">Resumen <span id="anioTitulo"></span></h2>
-            <p class="text-gray-400 mt-1">Cuota mensual: <span id="cuotaTexto" class="text-white font-semibold"></span></p>
+        <div class="flex flex-wrap items-end justify-between gap-4">
+            <div>
+                <h2 class="text-3xl font-extrabold tracking-tight">Resumen <span id="anioTitulo"></span></h2>
+                <p class="text-gray-400 mt-1">Cuota mensual: <span id="cuotaTexto" class="text-white font-semibold"></span></p>
+            </div>
+            <button id="btnExcel" class="flex items-center gap-2 bg-green-700 hover:bg-green-600 text-white font-semibold text-sm py-2.5 px-5 rounded-full transition cursor-pointer">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 20h14"/></svg>
+                Descargar Excel
+            </button>
         </div>
 
         <!-- Montos -->
@@ -119,9 +127,12 @@
 
         <!-- Integrantes -->
         <section class="tarjeta overflow-hidden">
-            <div class="p-5 border-b border-zinc-800">
-                <h3 class="font-bold text-lg">Integrantes</h3>
-                <p class="text-sm text-gray-500">Toca un integrante para ver sus pagos, deudas y premios.</p>
+            <div class="p-5 border-b border-zinc-800 flex flex-wrap items-center justify-between gap-3">
+                <div>
+                    <h3 class="font-bold text-lg">Integrantes</h3>
+                    <p class="text-sm text-gray-500">Toca un integrante para ver sus pagos, deudas y premios.</p>
+                </div>
+                <button id="btnNuevoIntegrante" class="border border-zinc-700 hover:border-fiatRed text-gray-200 hover:text-white text-sm font-semibold py-2 px-4 rounded-full transition cursor-pointer">+ Agregar integrante</button>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-sm">
@@ -137,6 +148,20 @@
                     </thead>
                     <tbody id="listaIntegrantes"></tbody>
                 </table>
+            </div>
+        </section>
+
+        <!-- Respaldo -->
+        <section class="tarjeta p-5 flex flex-wrap items-center justify-between gap-4">
+            <div class="max-w-xl">
+                <h3 class="font-bold">Respaldo de registros</h3>
+                <p id="respaldoTexto" class="text-sm text-gray-500 mt-1"></p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+                <button id="btnExportar" class="border border-zinc-700 hover:border-white text-gray-200 text-sm font-semibold py-2 px-4 rounded-full transition cursor-pointer">Descargar respaldo</button>
+                <label class="border border-zinc-700 hover:border-white text-gray-200 text-sm font-semibold py-2 px-4 rounded-full transition cursor-pointer">
+                    Cargar respaldo<input type="file" id="inpImportar" accept="application/json,.json" class="sr-only">
+                </label>
             </div>
         </section>
     </main>
@@ -156,6 +181,89 @@
     </div>
 </div>
 
+<!-- ================== NUEVO REGISTRO ================== -->
+<div id="modalRegistro" class="fixed inset-0 z-50 hidden items-end sm:items-center justify-center bg-black/85 backdrop-blur-sm sm:p-4" role="dialog" aria-modal="true" aria-labelledby="mrTitulo">
+    <div class="bg-zinc-950 border border-zinc-800 w-full sm:max-w-lg max-h-[94vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl shadow-2xl">
+        <div class="sticky top-0 z-10 bg-gradient-to-r from-fiatRed to-red-900 p-5 flex items-start justify-between gap-4">
+            <div>
+                <h3 id="mrTitulo" class="text-xl font-black tracking-wide">NUEVO REGISTRO</h3>
+                <p class="text-red-100 text-sm mt-1">Agrega un integrante o registra un pago, una grúa o un premio.</p>
+            </div>
+            <button type="button" id="mrCerrar" aria-label="Cerrar" class="text-white/70 hover:text-white text-3xl leading-none cursor-pointer">&times;</button>
+        </div>
+
+        <form id="formRegistro" class="p-5 space-y-5">
+            <div>
+                <label class="etiqueta" for="rIntegrante">Integrante</label>
+                <select id="rIntegrante" name="integranteId" required class="campo"></select>
+            </div>
+
+            <div id="bloqueNuevo" class="hidden space-y-3 p-4 rounded-xl border border-zinc-800 bg-zinc-900/40">
+                <p class="text-sm font-semibold text-white">Datos del integrante nuevo</p>
+                <div class="grid grid-cols-2 gap-3">
+                    <div><label class="etiqueta" for="rNombre">Nombre</label><input id="rNombre" name="nombre" type="text" required class="campo"></div>
+                    <div><label class="etiqueta" for="rApellido">Apellido</label><input id="rApellido" name="apellido" type="text" required class="campo"></div>
+                </div>
+                <div><label class="etiqueta" for="rCedula">Cédula</label><input id="rCedula" name="cedula" type="text" required placeholder="V-12345678" class="campo"></div>
+                <div class="grid grid-cols-3 gap-3">
+                    <div class="col-span-2"><label class="etiqueta" for="rCarro">Modelo del carro (opcional)</label><input id="rCarro" name="carro" type="text" placeholder="Ej. Fiat Siena" class="campo"></div>
+                    <div><label class="etiqueta" for="rAnioCarro">Año</label><input id="rAnioCarro" name="anioCarro" type="number" min="1950" max="2030" placeholder="2008" class="campo"></div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="etiqueta" for="rTipo">Tipo de acción</label>
+                    <select id="rTipo" name="tipo" class="campo">
+                        <option value="pago">Pago</option>
+                        <option value="grua">Grúa</option>
+                        <option value="premio">Premio</option>
+                        <option value="ninguna">Solo agregar integrante</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="etiqueta" for="rFecha" id="rFechaLabel">Fecha del pago</label>
+                    <input id="rFecha" name="fecha" type="date" required class="campo">
+                </div>
+            </div>
+
+            <div data-tipo="pago" class="bloque-tipo space-y-3">
+                <div class="grid grid-cols-2 gap-3">
+                    <div><label class="etiqueta" for="rMes">Mes que paga</label><select id="rMes" name="mes" required class="campo"></select></div>
+                    <div><label class="etiqueta" for="rMonto">Monto</label><input id="rMonto" name="monto" type="number" step="0.01" min="0.01" required class="campo"></div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div><label class="etiqueta" for="rMetodo">Banco / método</label><input id="rMetodo" name="metodo" type="text" required placeholder="Pago Móvil, Zelle…" class="campo"></div>
+                    <div><label class="etiqueta" for="rReferencia">N° de referencia</label><input id="rReferencia" name="referencia" type="text" placeholder="Opcional" class="campo"></div>
+                </div>
+                <div>
+                    <label class="etiqueta" for="rEstado">Estado del pago</label>
+                    <select id="rEstado" name="estado" class="campo">
+                        <option value="confirmado">Confirmado</option>
+                        <option value="pendiente">Por confirmar</option>
+                    </select>
+                </div>
+            </div>
+
+            <div data-tipo="grua" class="bloque-tipo hidden space-y-3">
+                <div><label class="etiqueta" for="rGruaDetalle">Detalle</label><input id="rGruaDetalle" name="detalle" type="text" required placeholder="Ej. Remolque de Valencia a Maracay" class="campo"></div>
+                <div><label class="etiqueta" for="rCosto">Costo (opcional)</label><input id="rCosto" name="costo" type="number" step="0.01" min="0" placeholder="0.00" class="campo"></div>
+            </div>
+
+            <div data-tipo="premio" class="bloque-tipo hidden space-y-3">
+                <div><label class="etiqueta" for="rPremio">Premio</label><input id="rPremio" name="premio" type="text" required placeholder="Ej. Kit de aceite" class="campo"></div>
+                <div><label class="etiqueta" for="rPremioDetalle">Detalle (opcional)</label><input id="rPremioDetalle" name="detalle" type="text" placeholder="Ej. Ganador de la rodada de octubre" class="campo"></div>
+            </div>
+
+            <p id="rError" class="hidden text-sm text-red-400 bg-red-950/40 border border-red-900/50 rounded-lg px-3 py-2"></p>
+
+            <button id="rGuardar" type="submit" class="w-full bg-fiatRed hover:bg-red-700 text-white font-bold py-3.5 rounded-lg transition cursor-pointer text-lg">Guardar pago</button>
+        </form>
+    </div>
+</div>
+
+<div id="toast" class="hidden" role="status" aria-live="polite"></div>
+
 <script>
 // =====================================================================
 //  ACCESO TEMPORAL
@@ -171,7 +279,7 @@ const USUARIOS = [
 // =====================================================================
 const CONFIG = { cuotaMensual: 10, moneda: '$' };
 
-const INTEGRANTES = [
+const INTEGRANTES_BASE = [
     {
         id: 'julio-navas',
         nombre: 'Julio', apellido: 'Navas',
@@ -184,7 +292,7 @@ const INTEGRANTES = [
 ];
 
 // mes = mes que se está pagando | fecha = día en que pagó | estado: confirmado o pendiente
-const PAGOS = [
+const PAGOS_BASE = [
     { integranteId: 'julio-navas', mes: '2026-01', fecha: '2026-01-05', monto: 10, metodo: 'Pago Móvil', referencia: '001245', estado: 'confirmado' },
     { integranteId: 'julio-navas', mes: '2026-02', fecha: '2026-02-04', monto: 10, metodo: 'Pago Móvil', referencia: '002318', estado: 'confirmado' },
     { integranteId: 'julio-navas', mes: '2026-03', fecha: '2026-03-06', monto: 10, metodo: 'Zelle',      referencia: '003902', estado: 'confirmado' },
@@ -197,14 +305,46 @@ const PAGOS = [
     { integranteId: 'julio-navas', mes: '2026-10', fecha: '2026-10-15', monto: 10, metodo: 'Pago Móvil', referencia: '004532', estado: 'pendiente' }
 ];
 
-const PREMIOS = [
+const PREMIOS_BASE = [
     { integranteId: 'julio-navas', fecha: '2026-03-15', premio: 'Kit de limpieza para el carro', detalle: 'Ganador del concurso de la rodada de marzo' },
     { integranteId: 'julio-navas', fecha: '2026-07-20', premio: 'Placa conmemorativa Élite',     detalle: 'Mejor restauración del aniversario' }
 ];
 
-const GRUAS = [
+const GRUAS_BASE = [
     { integranteId: 'julio-navas', fecha: '2026-05-18', detalle: 'Remolque por falla de la bomba de gasolina', costo: 0 }
 ];
+
+// Lo que se agrega con el botón "+ Registrar" se guarda en este navegador
+// y se suma a los datos de arriba.
+const CLAVE_LS = 'eliteRegistros';
+const VACIO = () => ({ integrantes: [], pagos: [], premios: [], gruas: [] });
+let guardado = VACIO();
+try {
+    const g = JSON.parse(localStorage.getItem(CLAVE_LS) || 'null');
+    if (g) Object.keys(guardado).forEach(k => { if (Array.isArray(g[k])) guardado[k] = g[k]; });
+} catch {}
+
+let INTEGRANTES = [], PAGOS = [], PREMIOS = [], GRUAS = [];
+function combinarDatos() {
+    INTEGRANTES = [...INTEGRANTES_BASE, ...guardado.integrantes];
+    PAGOS = [...PAGOS_BASE, ...guardado.pagos];
+    PREMIOS = [...PREMIOS_BASE, ...guardado.premios];
+    GRUAS = [...GRUAS_BASE, ...guardado.gruas];
+}
+combinarDatos();
+
+function guardarCambios(nuevo) {
+    try {
+        localStorage.setItem(CLAVE_LS, JSON.stringify(nuevo));
+    } catch {
+        toast('No se pudo guardar en este navegador. Revisa que no esté en modo privado.', true);
+        return false;
+    }
+    guardado = nuevo;
+    combinarDatos();
+    return true;
+}
+const uid = pre => pre + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 // =====================================================================
 
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -287,6 +427,7 @@ function entrar(admin) {
     renderGraficos();
     renderCalendario();
     renderIntegrantes();
+    renderRespaldo();
 }
 
 // --------------------- Montos ---------------------
@@ -318,7 +459,11 @@ function renderGraficos() {
     graficos.forEach(g => g.destroy()); graficos = [];
     if (typeof Chart === 'undefined') {
         ['graficoMeses', 'graficoEstado'].forEach(id => {
-            $(id).parentElement.innerHTML = '<p class="text-gray-500 text-sm">No se pudieron cargar los gráficos. Revisa tu conexión a internet.</p>';
+            const lienzo = $(id);
+            lienzo.classList.add('hidden');
+            if (!lienzo.parentElement.querySelector('.sin-grafico')) {
+                lienzo.insertAdjacentHTML('afterend', '<p class="sin-grafico text-gray-500 text-sm">No se pudieron cargar los gráficos. Revisa tu conexión a internet.</p>');
+            }
         });
         return;
     }
@@ -484,6 +629,7 @@ function abrirIntegrante(id) {
     const gruas = GRUAS.filter(g => g.integranteId === i.id).sort((a, b) => b.fecha.localeCompare(a.fecha));
     const pagos = PAGOS.filter(p => p.integranteId === i.id).sort((a, b) => b.fecha.localeCompare(a.fecha));
 
+    idAbierto = i.id;
     $('miNombre').textContent = nombre(i);
     $('miDatos').textContent = [i.cedula, `${i.carro} ${i.anioCarro}`.trim(), i.telefono, `Miembro desde ${nombreMes(i.ingreso).toLowerCase()}`].filter(Boolean).join('  |  ');
 
@@ -499,6 +645,7 @@ function abrirIntegrante(id) {
     const vacio = t => `<p class="text-sm text-gray-500">${t}</p>`;
 
     $('miCuerpo').innerHTML =
+        `<button type="button" data-registrar="${esc(i.id)}" class="w-full bg-fiatRed hover:bg-red-700 text-white font-bold py-2.5 rounded-lg transition cursor-pointer">+ Registrar pago, grúa o premio</button>` +
         seccion(`Cuotas ${ANIO}`, `<div class="grid grid-cols-4 sm:grid-cols-6 gap-2">${tiraMeses}</div>
             <div class="flex flex-wrap gap-4 mt-3 text-xs text-gray-400">
                 <span>✓ Pagado</span><span>… Por confirmar</span><span>✗ Debe</span>
@@ -515,7 +662,8 @@ function abrirIntegrante(id) {
             ? `<div class="space-y-2">${premios.map(p => `
                 <div class="flex gap-3 p-3 rounded-xl bg-zinc-900/60">
                     <span class="text-2xl">🏆</span>
-                    <div><p class="font-semibold text-white">${esc(p.premio)}</p><p class="text-sm text-gray-400">${esc(p.detalle)}</p><p class="text-xs text-gray-500 mt-1">${fechaLarga(p.fecha)}</p></div>
+                    <div class="flex-1"><p class="font-semibold text-white">${esc(p.premio)}</p><p class="text-sm text-gray-400">${esc(p.detalle)}</p><p class="text-xs text-gray-500 mt-1">${fechaLarga(p.fecha)}</p></div>
+                    ${btnEliminar('premios', p)}
                 </div>`).join('')}</div>`
             : vacio('Todavía no tiene premios.')) +
 
@@ -523,21 +671,26 @@ function abrirIntegrante(id) {
             ? `<div class="space-y-2">${gruas.map(g => `
                 <div class="flex justify-between gap-3 p-3 rounded-xl bg-zinc-900/60 text-sm">
                     <div><p class="text-white">${esc(g.detalle)}</p><p class="text-xs text-gray-500 mt-1">${fechaLarga(g.fecha)}</p></div>
-                    <span class="text-gray-300 whitespace-nowrap">${Number(g.costo) ? dinero(g.costo) : 'Sin costo'}</span>
+                    <div class="text-right space-y-1 shrink-0"><span class="block text-gray-300 whitespace-nowrap">${Number(g.costo) ? dinero(g.costo) : 'Sin costo'}</span>${btnEliminar('gruas', g)}</div>
                 </div>`).join('')}</div>`
             : vacio('No ha usado grúas.')) +
 
         seccion('Historial de pagos', pagos.length
             ? `<div class="overflow-x-auto rounded-xl border border-zinc-800"><table class="w-full text-sm">
-                <thead class="bg-zinc-900 text-left text-xs uppercase tracking-wider text-gray-400"><tr><th class="px-3 py-2">Fecha</th><th class="px-3 py-2">Cuota</th><th class="px-3 py-2">Método</th><th class="px-3 py-2">Ref.</th><th class="px-3 py-2 text-right">Monto</th></tr></thead>
+                <thead class="bg-zinc-900 text-left text-xs uppercase tracking-wider text-gray-400"><tr><th class="px-3 py-2">Fecha</th><th class="px-3 py-2">Cuota</th><th class="px-3 py-2">Método</th><th class="px-3 py-2">Ref.</th><th class="px-3 py-2 text-right">Monto</th><th class="px-3 py-2"></th></tr></thead>
                 <tbody>${pagos.map(p => `<tr class="border-t border-zinc-900">
                     <td class="px-3 py-2 whitespace-nowrap text-gray-300">${esc(p.fecha)}</td>
                     <td class="px-3 py-2 whitespace-nowrap text-gray-300">${MESES_C[Number(p.mes.slice(5)) - 1]} ${p.mes.slice(0, 4)}</td>
                     <td class="px-3 py-2 whitespace-nowrap text-gray-300">${esc(p.metodo)}</td>
                     <td class="px-3 py-2 text-gray-400">${esc(p.referencia)}</td>
                     <td class="px-3 py-2 text-right font-semibold whitespace-nowrap ${p.estado === 'confirmado' ? 'text-green-400' : 'text-amber-300'}">${dinero(p.monto)}${p.estado === 'pendiente' ? ' …' : ''}</td>
+                    <td class="px-3 py-2 text-right">${btnEliminar('pagos', p)}</td>
                 </tr>`).join('')}</tbody></table></div>`
-            : vacio('Sin pagos registrados.'));
+            : vacio('Sin pagos registrados.')) +
+
+        (i.origen === 'panel'
+            ? `<div class="pt-4 border-t border-zinc-800"><button type="button" data-eliminar-integrante="${esc(i.id)}" class="text-sm text-red-400 hover:text-red-300 font-semibold cursor-pointer">Eliminar integrante y sus registros</button></div>`
+            : '');
 
     modalI.classList.remove('hidden');
     modalI.classList.add('flex');
@@ -561,7 +714,342 @@ $('listaIntegrantes').addEventListener('keydown', e => {
 });
 $('miCerrar').addEventListener('click', cerrarIntegrante);
 modalI.addEventListener('click', e => { if (e.target === modalI) cerrarIntegrante(); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape' && !modalI.classList.contains('hidden')) cerrarIntegrante(); });
+document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    if (!modalR.classList.contains('hidden')) cerrarRegistro();
+    else if (!modalI.classList.contains('hidden')) cerrarIntegrante();
+});
+
+// --------------------- Avisos ---------------------
+let toastTimer;
+function toast(msg, error = false) {
+    const t = $('toast');
+    t.textContent = msg;
+    t.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] px-5 py-3 rounded-xl text-sm font-medium shadow-2xl max-w-[90vw] border ' +
+        (error ? 'bg-red-950 text-red-200 border-red-800' : 'bg-zinc-800 text-white border-zinc-700');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.add('hidden'), 3500);
+}
+
+function refrescar() {
+    renderKpis();
+    renderGraficos();
+    renderCalendario();
+    renderIntegrantes();
+    renderRespaldo();
+}
+
+// --------------------- Nuevo registro ---------------------
+const modalR = $('modalRegistro');
+const formR = $('formRegistro');
+let idAbierto = null;
+
+const btnEliminar = (lista, reg) => reg.origen === 'panel'
+    ? `<button type="button" data-eliminar="${lista}" data-id="${esc(reg.id)}" class="text-xs text-gray-500 hover:text-red-400 font-semibold cursor-pointer shrink-0">Eliminar</button>`
+    : '';
+
+function opcionesMes() {
+    let html = '';
+    for (let k = -12; k <= 2; k++) {
+        const d = new Date(HOY.getFullYear(), HOY.getMonth() + k, 1);
+        const mes = `${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
+        html += `<option value="${mes}">${nombreMes(mes)}</option>`;
+    }
+    $('rMes').innerHTML = html;
+}
+
+function llenarSelectRegistro() {
+    const lista = activos().sort((a, b) => nombre(a).localeCompare(nombre(b), 'es'));
+    $('rIntegrante').innerHTML = '<option value="">Elige un integrante</option>' +
+        lista.map(i => `<option value="${esc(i.id)}">${esc(nombre(i))}${i.cedula ? ' (' + esc(i.cedula) + ')' : ''}</option>`).join('') +
+        '<option value="__nuevo">+ Agregar integrante nuevo</option>';
+}
+
+function activarBloque(el, on) {
+    el.classList.toggle('hidden', !on);
+    el.querySelectorAll('input, select').forEach(x => { x.disabled = !on; });
+}
+
+function actualizarFormulario() {
+    const nuevo = $('rIntegrante').value === '__nuevo';
+    activarBloque($('bloqueNuevo'), nuevo);
+    const optSolo = $('rTipo').querySelector('[value="ninguna"]');
+    optSolo.hidden = optSolo.disabled = !nuevo;
+    if (!nuevo && $('rTipo').value === 'ninguna') $('rTipo').value = 'pago';
+    const tipo = $('rTipo').value;
+    document.querySelectorAll('.bloque-tipo').forEach(b => activarBloque(b, b.dataset.tipo === tipo));
+    $('rFechaLabel').textContent = { pago: 'Fecha del pago', grua: 'Fecha del servicio', premio: 'Fecha del premio', ninguna: 'Fecha de ingreso' }[tipo];
+    $('rGuardar').textContent = { pago: 'Guardar pago', grua: 'Guardar grúa', premio: 'Guardar premio', ninguna: 'Guardar integrante' }[tipo];
+}
+
+function abrirRegistro(pre = '') {
+    formR.reset();
+    $('rError').classList.add('hidden');
+    llenarSelectRegistro();
+    opcionesMes();
+    $('rIntegrante').value = pre || (activos().length ? '' : '__nuevo');
+    if (pre === '__nuevo') $('rTipo').value = 'ninguna';
+    $('rFecha').value = HOY_ISO;
+    $('rMes').value = MES_ACTUAL;
+    $('rMonto').value = CONFIG.cuotaMensual;
+    actualizarFormulario();
+    modalR.classList.remove('hidden');
+    modalR.classList.add('flex');
+    document.body.style.overflow = 'hidden';
+    (pre === '__nuevo' ? $('rNombre') : pre ? $('rTipo') : $('rIntegrante')).focus();
+}
+
+function cerrarRegistro() {
+    modalR.classList.add('hidden');
+    modalR.classList.remove('flex');
+    document.body.style.overflow = '';
+}
+
+$('rIntegrante').addEventListener('change', actualizarFormulario);
+$('rTipo').addEventListener('change', actualizarFormulario);
+$('rFecha').addEventListener('change', () => {
+    const mes = $('rFecha').value.slice(0, 7);
+    if ([...$('rMes').options].some(o => o.value === mes)) $('rMes').value = mes;
+});
+$('btnRegistrar').addEventListener('click', () => abrirRegistro());
+$('btnNuevoIntegrante').addEventListener('click', () => abrirRegistro('__nuevo'));
+$('mrCerrar').addEventListener('click', cerrarRegistro);
+modalR.addEventListener('click', e => { if (e.target === modalR) cerrarRegistro(); });
+
+const normCedula = c => String(c || '').toUpperCase().replace(/[^0-9A-Z]/g, '');
+const texto = v => String(v ?? '').trim();
+
+formR.addEventListener('submit', e => {
+    e.preventDefault();
+    const d = Object.fromEntries(new FormData(formR));
+    const error = msg => { $('rError').textContent = msg; $('rError').classList.remove('hidden'); };
+    $('rError').classList.add('hidden');
+
+    const nuevo = VACIO();
+    let integranteId = d.integranteId;
+    let nombreInt;
+
+    if (integranteId === '__nuevo') {
+        const ced = normCedula(d.cedula);
+        if (!ced) return error('Escribe la cédula del integrante.');
+        if (INTEGRANTES.some(i => normCedula(i.cedula) === ced)) return error('Ya hay un integrante con esa cédula.');
+        const ingreso = [d.fecha.slice(0, 7), d.tipo === 'pago' ? d.mes : null].filter(Boolean).sort()[0];
+        const integrante = {
+            id: uid('i-'), nombre: texto(d.nombre), apellido: texto(d.apellido), cedula: texto(d.cedula),
+            carro: texto(d.carro), anioCarro: texto(d.anioCarro), telefono: '',
+            ingreso, activo: true, origen: 'panel'
+        };
+        nuevo.integrantes.push(integrante);
+        integranteId = integrante.id;
+        nombreInt = nombre(integrante);
+    } else {
+        const i = INTEGRANTES.find(x => x.id === integranteId);
+        if (!i) return error('Elige un integrante.');
+        nombreInt = nombre(i);
+    }
+
+    let aviso = `${nombreInt} agregado.`;
+    if (d.tipo === 'pago') {
+        if (PAGOS.some(p => p.integranteId === integranteId && p.mes === d.mes)) {
+            return error(`${nombreInt} ya tiene un pago registrado para ${nombreMes(d.mes).toLowerCase()}.`);
+        }
+        const monto = Number(d.monto);
+        if (!(monto > 0)) return error('Escribe un monto mayor a 0.');
+        nuevo.pagos.push({ id: uid('pg-'), integranteId, mes: d.mes, fecha: d.fecha, monto, metodo: texto(d.metodo), referencia: texto(d.referencia), estado: d.estado, origen: 'panel' });
+        aviso = `Pago de ${nombreInt} guardado.`;
+    } else if (d.tipo === 'grua') {
+        nuevo.gruas.push({ id: uid('gr-'), integranteId, fecha: d.fecha, detalle: texto(d.detalle), costo: Number(d.costo) || 0, origen: 'panel' });
+        aviso = `Grúa de ${nombreInt} guardada.`;
+    } else if (d.tipo === 'premio') {
+        nuevo.premios.push({ id: uid('pr-'), integranteId, fecha: d.fecha, premio: texto(d.premio), detalle: texto(d.detalle), origen: 'panel' });
+        aviso = `Premio de ${nombreInt} guardado.`;
+    }
+
+    const combinado = {};
+    Object.keys(guardado).forEach(k => { combinado[k] = [...guardado[k], ...nuevo[k]]; });
+    if (!guardarCambios(combinado)) return;
+
+    if (d.tipo === 'pago') {
+        const [y, m] = d.fecha.split('-').map(Number);
+        st.calAnio = y; st.calMes = m - 1; st.diaSel = d.fecha;
+    }
+    cerrarRegistro();
+    refrescar();
+    toast(aviso);
+});
+
+// Eliminar y registrar desde la ficha del integrante
+$('miCuerpo').addEventListener('click', e => {
+    const reg = e.target.closest('[data-registrar]');
+    const del = e.target.closest('[data-eliminar]');
+    const delInt = e.target.closest('[data-eliminar-integrante]');
+
+    if (reg) { cerrarIntegrante(); abrirRegistro(reg.dataset.registrar); return; }
+
+    if (del) {
+        if (!confirm('¿Eliminar este registro?')) return;
+        const lista = del.dataset.eliminar;
+        if (!guardarCambios({ ...guardado, [lista]: guardado[lista].filter(x => x.id !== del.dataset.id) })) return;
+        refrescar();
+        abrirIntegrante(idAbierto);
+        toast('Registro eliminado.');
+    }
+
+    if (delInt) {
+        const id = delInt.dataset.eliminarIntegrante;
+        const i = INTEGRANTES.find(x => x.id === id);
+        if (!confirm(`¿Eliminar a ${nombre(i)} y todos sus pagos, grúas y premios?`)) return;
+        const sinEl = {};
+        Object.keys(guardado).forEach(k => {
+            sinEl[k] = guardado[k].filter(x => (k === 'integrantes' ? x.id : x.integranteId) !== id);
+        });
+        if (!guardarCambios(sinEl)) return;
+        cerrarIntegrante();
+        refrescar();
+        toast('Integrante eliminado.');
+    }
+});
+
+// --------------------- Excel ---------------------
+function descargarExcel() {
+    if (typeof XLSX === 'undefined') {
+        toast('No se pudo cargar la herramienta de Excel. Revisa tu conexión a internet.', true);
+        return;
+    }
+    const wb = XLSX.utils.book_new();
+    const aFecha = iso => { const [y, m, d] = iso.split('-').map(Number); return new Date(y, m - 1, d); };
+    const intDe = id => INTEGRANTES.find(i => i.id === id) || { nombre: '', apellido: '', cedula: '' };
+    const ESTADO_TXT = { confirmado: 'Pagado', pendiente: 'Por confirmar', deuda: 'Debe', porPagar: 'Por pagar', futuro: '', na: '' };
+    const C = CONFIG.cuotaMensual;
+    const porFecha = (a, b) => a.fecha.localeCompare(b.fecha);
+
+    function crearHoja(encabezados, filas, colsDinero = []) {
+        const ws = XLSX.utils.aoa_to_sheet([encabezados, ...filas], { cellDates: true });
+        ws['!cols'] = encabezados.map((h, c) => ({
+            wch: Math.min(45, Math.max(h.length, ...filas.map(f => f[c] instanceof Date ? 10 : String(f[c] ?? '').length)) + 2)
+        }));
+        if (filas.length) {
+            ws['!autofilter'] = { ref: XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: filas.length, c: encabezados.length - 1 } }) };
+        }
+        filas.forEach((f, r) => f.forEach((v, c) => {
+            const cell = ws[XLSX.utils.encode_cell({ r: r + 1, c })];
+            if (!cell) return;
+            if (cell.t === 'd') cell.z = 'dd/mm/yyyy';
+            if (colsDinero.includes(c) && cell.t === 'n') cell.z = '#,##0.00';
+        }));
+        return ws;
+    }
+
+    // Integrantes
+    const filasInt = [...INTEGRANTES].sort((a, b) => nombre(a).localeCompare(nombre(b), 'es')).map(i => {
+        const meses = mesesDelAnio(ANIO).filter(m => m >= i.ingreso && m <= MES_ACTUAL);
+        const deudas = deudasDe(i);
+        return [
+            i.nombre, i.apellido, i.cedula, i.carro || '', /^\d+$/.test(i.anioCarro || '') ? Number(i.anioCarro) : (i.anioCarro || ''),
+            i.telefono || '', nombreMes(i.ingreso), i.activo ? 'Activo' : 'Inactivo',
+            meses.filter(m => estadoMes(i, m) === 'confirmado').length,
+            deudas.length, deudas.length * C,
+            PREMIOS.filter(p => p.integranteId === i.id).length,
+            GRUAS.filter(g => g.integranteId === i.id).length
+        ];
+    });
+    const wsInt = crearHoja(['Nombre', 'Apellido', 'Cédula', 'Carro', 'Año carro', 'Teléfono', 'Miembro desde', 'Estado',
+        `Cuotas pagadas ${ANIO}`, 'Meses en deuda', 'Deuda', 'Premios', 'Grúas'], filasInt, [10]);
+
+    // Cuotas del año
+    const filasCuotas = activos().sort((a, b) => nombre(a).localeCompare(nombre(b), 'es'))
+        .map(i => [nombre(i), ...mesesDelAnio(ANIO).map(m => ESTADO_TXT[estadoMes(i, m)])]);
+    const wsCuotas = crearHoja(['Integrante', ...MESES], filasCuotas);
+
+    // Pagos
+    const filasPagos = [...PAGOS].sort(porFecha).map(p => {
+        const i = intDe(p.integranteId);
+        return [aFecha(p.fecha), nombre(i), i.cedula, nombreMes(p.mes), Number(p.mes.slice(0, 4)), Number(p.monto),
+            p.metodo || '', p.referencia || '', p.estado === 'confirmado' ? 'Confirmado' : 'Por confirmar'];
+    });
+    const wsPagos = crearHoja(['Fecha', 'Integrante', 'Cédula', 'Mes que paga', 'Año', 'Monto', 'Método', 'Referencia', 'Estado'], filasPagos, [5]);
+
+    // Deudas
+    const filasDeudas = [];
+    activos().forEach(i => deudasDe(i).forEach(m => filasDeudas.push([nombre(i), i.cedula, nombreMes(m), C])));
+    const wsDeudas = crearHoja(['Integrante', 'Cédula', 'Mes', 'Monto'], filasDeudas, [3]);
+
+    // Grúas y premios
+    const wsGruas = crearHoja(['Fecha', 'Integrante', 'Cédula', 'Detalle', 'Costo'],
+        [...GRUAS].sort(porFecha).map(g => { const i = intDe(g.integranteId); return [aFecha(g.fecha), nombre(i), i.cedula, g.detalle, Number(g.costo) || 0]; }), [4]);
+    const wsPremios = crearHoja(['Fecha', 'Integrante', 'Cédula', 'Premio', 'Detalle'],
+        [...PREMIOS].sort(porFecha).map(p => { const i = intDe(p.integranteId); return [aFecha(p.fecha), nombre(i), i.cedula, p.premio, p.detalle || '']; }));
+
+    // Resumen (con fórmulas que leen las otras hojas)
+    const f = (formula, z) => ({ t: 'n', f: formula, z });
+    const wsRes = XLSX.utils.aoa_to_sheet([
+        ['Organización Élite: resumen administrativo'],
+        ['Generado', new Date()],
+        ['Año', ANIO],
+        ['Cuota mensual', C],
+        [],
+        ['Recaudado (confirmado)', f(`SUMIFS(Pagos!F:F,Pagos!I:I,"Confirmado",Pagos!E:E,B3)`, '#,##0.00')],
+        ['Por confirmar', f(`SUMIFS(Pagos!F:F,Pagos!I:I,"Por confirmar",Pagos!E:E,B3)`, '#,##0.00')],
+        ['En deuda', f(`SUM(Deudas!D:D)`, '#,##0.00')],
+        ['Integrantes activos', f(`COUNTIF(Integrantes!H:H,"Activo")`)],
+        ['Premios entregados', f(`COUNTA(Premios!B:B)-1`)],
+        ['Usos de grúa', f(`COUNTA('Grúas'!B:B)-1`)],
+        [],
+        ['Los totales se calculan con las hojas Pagos, Deudas, Integrantes, Premios y Grúas.']
+    ], { cellDates: true });
+    wsRes['B2'].z = 'dd/mm/yyyy hh:mm';
+    wsRes['B4'].z = '#,##0.00';
+    wsRes['!cols'] = [{ wch: 28 }, { wch: 18 }];
+
+    XLSX.utils.book_append_sheet(wb, wsRes, 'Resumen');
+    XLSX.utils.book_append_sheet(wb, wsInt, 'Integrantes');
+    XLSX.utils.book_append_sheet(wb, wsCuotas, `Cuotas ${ANIO}`);
+    XLSX.utils.book_append_sheet(wb, wsPagos, 'Pagos');
+    XLSX.utils.book_append_sheet(wb, wsDeudas, 'Deudas');
+    XLSX.utils.book_append_sheet(wb, wsGruas, 'Grúas');
+    XLSX.utils.book_append_sheet(wb, wsPremios, 'Premios');
+
+    XLSX.writeFile(wb, `organizacion-elite-${HOY_ISO}.xlsx`, { compression: true });
+    toast('Excel descargado.');
+}
+$('btnExcel').addEventListener('click', descargarExcel);
+
+// --------------------- Respaldo ---------------------
+function renderRespaldo() {
+    const n = Object.values(guardado).reduce((s, l) => s + l.length, 0);
+    $('respaldoTexto').textContent = n
+        ? `Tienes ${n} ${n === 1 ? 'registro agregado' : 'registros agregados'} desde el panel. Se guardan solo en este navegador: descarga un respaldo de vez en cuando para no perderlos.`
+        : 'Lo que agregues con "+ Registrar" se guarda en este navegador. Aquí puedes descargar o cargar un respaldo.';
+}
+
+$('btnExportar').addEventListener('click', () => {
+    const blob = new Blob([JSON.stringify(guardado, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `respaldo-elite-${HOY_ISO}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+});
+
+$('inpImportar').addEventListener('change', async e => {
+    const file = e.target.files[0];
+    e.target.value = '';
+    if (!file) return;
+    try {
+        const datos = JSON.parse(await file.text());
+        const limpio = VACIO();
+        Object.keys(limpio).forEach(k => {
+            if (!Array.isArray(datos[k])) throw new Error();
+            limpio[k] = datos[k];
+        });
+        if (!confirm('Esto reemplaza los registros agregados desde el panel por los del respaldo. ¿Continuar?')) return;
+        if (guardarCambios(limpio)) { refrescar(); toast('Respaldo cargado.'); }
+    } catch {
+        toast('Ese archivo no es un respaldo válido del panel.', true);
+    }
+});
 
 // --------------------- Inicio ---------------------
 const s = sesion();
